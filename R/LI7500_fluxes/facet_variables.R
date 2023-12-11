@@ -1,6 +1,7 @@
 library(tidyverse)
 library(tidylog)
 library(co2fluxtent)
+library(ggh4x)
 
 ## Read in files ----
 # Make file list
@@ -90,8 +91,6 @@ fluxes.pivot = fluxes.calc |>
   select(uniqueID, redo, flux, time, variable, value)
 
 # Write the ggplot by aspect for now
-library(ggh4x)
-
 # Code from https://community.rstudio.com/t/using-a-for-loop-to-make-ggplot2-plots-and-save-them/84715/4
 
 fluxes.pivot %>%
