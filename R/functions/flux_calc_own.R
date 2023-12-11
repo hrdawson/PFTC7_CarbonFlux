@@ -10,9 +10,13 @@ flux_calc_own <- function (fluxfiles,
                            tfinish = NULL,
                            signal_threshold = 95,
                            ask_flag = TRUE) {
+  
+#Ask flag: a parameter to, if true, will ask me if i want to flag this file or not, it is problematic or no. It will also fill the dots in the part within the tstart and t finish, In the output there will be a new column, telling you if its flaged or not. 
+  
+  #The function, has a function inside, this is neeet.fit. 
 
   neeet.fit <- function(filename, tstart = tstart, tfinish = tstart, signal_threshold = signal_threshold) {
-    suppressMessages(suppressWarnings(input <- read_delim(filename, skip = skip, delim = "\t")))
+    suppressMessages(suppressWarnings(input <- read_delim(filename, skip = skip, delim = "\t"))) #So we dont get a lot of warnings
 
     # if (nrow(input) > 90) {
     #   input <- input[1:90, ]
