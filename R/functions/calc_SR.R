@@ -63,8 +63,8 @@ calcSR <- function(data, area = 317.8, volume = 1807.6){
       aspect = unique(data[data$uniqueID == unique, ]$aspect),
       transectID = unique(paste0(data[data$uniqueID == unique, ]$elevation, "_", unique(data[data$uniqueID == unique, ]$aspect)))
     ) %>% mutate(
-      co2_flux = (volume * pressure * (1000) * co2_dry)/(R * area * (temp + 273.15)), 
-      h2o_flux = (volume * pressure * (1000) * h2o_raw)/(R * area * (temp + 273.15))
+      co2_flux_sr = (volume * pressure * (1000) * co2_dry)/(R * area * (temp + 273.15)), 
+      h2o_flux_sr = (volume * pressure * (1000) * h2o_raw)/(R * area * (temp + 273.15))
       
       
     )
