@@ -46,6 +46,8 @@ meta <- tibble(file_path = unlist(licor_files),
 
 meta
 
+
+#look at measurements and calculate fluxes 
 licor_nee <- licor_files %>% 
   flux_calc_own(param = "nee", 
                 skip = 3,
@@ -56,8 +58,7 @@ licor_nee <- licor_files %>%
                 signal_threshold = 95) %>%  
   mutate(filename = basename(filename)) 
 
-# get nice package 
-
+#modify and restructure the data
 dt.nee <- licor_nee |>
   rename(file = filename) |>
   left_join(meta) |>
@@ -116,6 +117,7 @@ dt.carb[, ER := resp_best,]
 
 
 # WATER FLUXES -----
+#inspect measurements and calculate fluxes (actually, the function does the calculation for you)
 licor_et <- licor_files %>% 
   flux_calc_own(param = "et", 
                 skip = 3,
@@ -126,6 +128,7 @@ licor_et <- licor_files %>%
                 signal_threshold = 95) %>%  
   mutate(filename = basename(filename)) 
 
+#modify the data frame
 dt.et <- licor_et |>
   rename(file = filename) |>
   left_join(meta) |>
@@ -156,10 +159,11 @@ dt.et <- licor_et |>
   slice_tail(n = 1) |> 
   as.data.table()
 
+#select best model 
 dt.et <- dt.et  %>% 
   mutate(
     et_best = ifelse(aic_lm < aic_nlm, flux_lm, flux_nlm)) %>% 
-   filter(lm_rsqd > 0.75) %>% 
+  # filter(lm_rsqd > 0.75) %>% 
       as.data.table()
 
 
@@ -184,25 +188,22 @@ dt.water[, ET := et_best,]
 #get file locations
 filesSR <- dir(path = "../data/raw_data/", pattern = ".81x", full.names = TRUE, recursive = TRUE)
 
-toi <- 120:179 #time of interest
+toi <- 120:179 #time of interest (not strictly necessary as this time is also the default)
 
 #read SR
-SR <- readSR(files = filesSR)
+SR <- readSR(files = filesSR, toi = toi)
 names(SR)
 
 #calc SR
 dt.sr <- calcSR(data = SR)
 dt.sr <- as.data.table(dt.sr)
 
-## exclude site 4 for now
+##exclude site 4 for now as it's not yet measured
 
 dt.sr <- dt.sr[!elevation == 2600,]
 
-ggplot(data = dt.water, aes(x = aspect, y = ET)) +
-  geom_boxplot() +
-  facet_wrap(~elevation)
-
 ## COMBINE ----------------
+# combine the relevant information from the different sources 
 dt.carb[, plotID := paste0("Plot_", plot)]
 dt.carb.sub <- dt.carb[,.(plotID, elevation, aspect, GPP, NEE, ER)] 
 dt.water[, plotID := paste0("Plot_", plot)]
@@ -214,21 +215,6 @@ dt.com <- left_join(dt.water.sub, dt.carb.sub, by = c("plotID", "aspect", "eleva
 dt.com <- left_join(dt.com, dt.sr.sub, by = c("plotID", "aspect", "elevation"))
 
 
-ggplot(data = dt.water.sub, aes(x = aspect, y = ET)) +
-  geom_boxplot() +
-  facet_wrap(~elevation)
-
-ggplot(data = dt.carb.sub, aes(x = aspect, y = NEE)) +
-  geom_boxplot() +
-  facet_wrap(~elevation)
-
-ggplot(data = dt.com, aes(x = aspect, y = ET)) +
-  geom_boxplot() +
-  facet_wrap(~elevation)
-
-nrow(dt.water.sub)
-nrow(dt.carb.sub)
-
 
 ## CALCULATE ------------------
 
@@ -236,10 +222,8 @@ nrow(dt.carb.sub)
 ## CUE = GPP/NPP
 ## WUE = T / GPP 
 
-ggplot(data = dt.res, aes(x = aspect, y = ER)) +
-  facet_wrap(~ elevation) +
-  geom_boxplot()
-
+#careful here, there is some flipping going on to make everything that got uptaken negative and everything that gets into the atmosphere positive.
+# gives e.g., a negative NPP and GPP which is weird but somewhat right
 dt.res <- dt.com %>% mutate(
   ER = ER*-1,
   GPP = GPP*-1,
@@ -258,18 +242,16 @@ dt.res[, `:=` (NPP_mean = mean(NPP, na.rm = TRUE),
                 CUE_mean = mean(CUE, na.rm = TRUE),
                ER_mean = mean(ER, na.rm = TRUE),
                NEE_mean = mean(NEE, na.rm = TRUE),
-               SR_mean = mean(co2_flux_sr, na.rm = TRUE)
-               ), by = transectID]
-
-dt.res[, `:=` (TRANS_mean = mean(TRANS, na.rm = TRUE),
+               SR_mean = mean(co2_flux_sr, na.rm = TRUE), 
+               TRANS_mean = mean(TRANS, na.rm = TRUE),
                ET_mean = mean(ET, na.rm = TRUE),
-               WUE_mean = mean(WUE, na.rm = TRUE)), by = transectID]
-
+               WUE_mean = mean(WUE, na.rm = TRUE)
+               ), by = transectID]
 
 str(dt.res)
 ## PLOT --------------------
 
-#Carbon
+#Carbon plots ---------
 
 a <- ggplot(data = dt.res) + 
   geom_hline(yintercept = 0) +
@@ -344,7 +326,7 @@ library(gridExtra)
 p.co2 <- grid.arrange(a, b, c, d, e, f, ncol = 3, widths = c(1,1,1.3))
 ggsave(plot = p.co2,"plots/prelim_c_stuff.png", dpi = 600, width = 10)
 
-#Water
+#Water plots -------
 ggplot(data = dt.res) + 
   geom_line(aes(x = elevation, y = TRANS_mean, color = "TRANS"), linewidth = 1.2) +
   geom_line(aes(x = elevation, y = ET_mean, color = "ET"), linewidth = 1.2) +
