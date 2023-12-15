@@ -24,4 +24,16 @@ get_file(
 # After downloading the zip file, use this code to unzip it
 # If you downloaded a .txt, .csv, or similar file type, you can skip this
 
+# Unzip data
+unzip(
+  # Where is the zipped folder?
+  "raw_data/LI7500/LI7500_Site 1.zip",
+  # Where do you want the files to go to?
+  exdir = "raw_data/LI7500/Site 1")
 
+# Remove the zip file once you've unzipped it
+file.remove("raw_data/LI7500/LI7500_Site 1.zip") #let's free some space
+
+
+# If you're writing code to clean or analyse data,
+# use this script at the top to call in the most recent version of those data
