@@ -156,9 +156,10 @@ resp_long |>
 
 #plotting boltzmann plot
 resp_long |>
-  ggplot(aes(x = kT, y = log_resp, col = elevation)) + 
+  ggplot(aes(x = kT, y = log_resp, col = day_night)) + 
+  facet_wrap(~elevation)+
   geom_point() + 
-  geom_smooth(method = lm, se=T) +
+  geom_smooth(method = "lm", se=T) +
   stat_poly_eq()+
   xlab("1/kT") + theme_classic()
 
@@ -171,8 +172,28 @@ do({coefficients = lm(log_resp ~ kT, data = .)
   })
 
 #boxplot of activation energies for each plot
-ggplot(data=na.omit(evs),aes(x = elevation, y = slope, col=aspect)) + 
+ggplot(data=na.omit(evs),aes(x = elevation, y = slope)) + 
   geom_boxplot() + theme_classic() +
   ylab("Activation energy (eV)")
 
-#
+#activation energy of all plots
+ggplot(data=resp_long,aes(x = kT, y = log_resp)) + 
+  geom_point() + 
+  geom_smooth(method = lm, se=T) +
+  stat_poly_eq()+
+  xlab("1/kT")+
+  theme_classic()
+
+#Get activation energy (-0.33)
+lm <- lm(log_resp ~ kT, data = resp_long)
+
+summary(lm)
+
+coefficients(lm)[2]/(1.602*10^-19)
+
+confint(lm)
+
+-2.708816e-20/(1.602*10^-19)
+
+-7.922223e-20/(1.602*10^-19)
+
