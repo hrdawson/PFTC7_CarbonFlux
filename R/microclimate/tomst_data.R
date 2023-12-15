@@ -16,7 +16,12 @@ ids <- read.csv("raw_data/microclimate/Tomst logger IDs.csv") %>%
   mutate(tomst_id = as.numeric(gsub("TMS","",tomst_id))) %>%
   mutate(site = as.numeric(unlist(lapply(plot_id, function(x){substr(x, 1, 1)}))),
          aspect = unlist(lapply(plot_id, function(x){substr(x, 2, 2)})),
-         plot = as.numeric(unlist(lapply(plot_id, function(x){substr(x, 3, 3)}))))
+         plot = as.numeric(unlist(lapply(plot_id, function(x){substr(x, 3, 3)})))) |>
+  # harmonise aspect
+  mutate(aspect = case_when(
+    aspect == "E" ~ "east",
+    aspect == "W" ~ "west"
+  ))
 
 # List Tomst data files in local folder
 f <- dir(path = "raw_data/microclimate/Tomst_logger_raw", pattern = "^data_.*.csv$",
