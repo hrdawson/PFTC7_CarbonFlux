@@ -21,11 +21,11 @@ library(data.table)
 
 ## TENT CO2 --------------
 # Look for flux files in a folder
-licor_files <- Map(c, co2fluxtent::read_files("../data/raw_data/Site 1/"), 
-                   co2fluxtent::read_files("../data/raw_data/Site 2/"),
-                   co2fluxtent::read_files("../data/raw_data/Site 3/"),
-                   co2fluxtent::read_files("../data/raw_data/Site 4/"),
-                   co2fluxtent::read_files("../data/raw_data/Site 5/"))
+licor_files <- Map(c, co2fluxtent::read_files("raw_data/Site 1/"), 
+                   co2fluxtent::read_files("raw_data/Site 2/"),
+                   co2fluxtent::read_files("raw_data/Site 3/"),
+                   co2fluxtent::read_files("raw_data/Site 4/"),
+                   co2fluxtent::read_files("raw_data/Site 5/"))
 
 # Check if the files are ok
 licor_files <- test_flux_files(licor_files, skip = 3, min_rows = 50)
@@ -186,7 +186,7 @@ dt.water[, ET := et_best,]
 ## SOIL RESPIRATION ----------------------
 
 #get file locations
-filesSR <- dir(path = "../data/raw_data/", pattern = ".81x", full.names = TRUE, recursive = TRUE)
+filesSR <- dir(path = "raw_data/", pattern = ".81x", full.names = TRUE, recursive = TRUE)
 
 toi <- 120:179 #time of interest (not strictly necessary as this time is also the default)
 
@@ -194,13 +194,16 @@ toi <- 120:179 #time of interest (not strictly necessary as this time is also th
 SR <- readSR(files = filesSR, toi = toi)
 names(SR)
 
+ggplot(data = SR, aes(x = Etime, y = Cdry, color = iChunk)) +
+  geom_point() +
+  scale_color_viridis_c() +
+  facet_wrap(~ elevation) +
+  theme_bw()
+
 #calc SR
 dt.sr <- calcSR(data = SR)
 dt.sr <- as.data.table(dt.sr)
-
-##exclude site 4 for now as it's not yet measured
-
-dt.sr <- dt.sr[!elevation == 2600,]
+dt.sr <- dt.sr[!co2_flux_sr < 0]
 
 ## COMBINE ----------------
 # combine the relevant information from the different sources 
@@ -248,7 +251,9 @@ dt.res[, `:=` (NPP_mean = mean(NPP, na.rm = TRUE),
                WUE_mean = mean(WUE, na.rm = TRUE)
                ), by = transectID]
 
-str(dt.res)
+summary(dt.res)
+
+fwrite(dt.res, "outputs/prelim_flux_results.csv")
 ## PLOT --------------------
 
 #Carbon plots ---------
@@ -326,6 +331,17 @@ library(gridExtra)
 p.co2 <- grid.arrange(a, b, c, d, e, f, ncol = 3, widths = c(1,1,1.3))
 ggsave(plot = p.co2,"plots/prelim_c_stuff.png", dpi = 600, width = 10)
 
+## correlation matrix Carbon 
+library(ggcorrplot)
+summary(dt.res)
+c.cor <- round(cor(dt.res[!is.na(dt.res$CUE),.(CUE, NPP, NEE, GPP, ER, co2_flux_sr)]), 1)
+head(c.cor[, 1:6])
+
+ggcorrplot(c.cor, hc.order = TRUE, type = "lower",
+           lab = TRUE)
+
+
+
 #Water plots -------
 ggplot(data = dt.res) + 
   geom_line(aes(x = elevation, y = TRANS_mean, color = "TRANS"), linewidth = 1.2) +
@@ -372,3 +388,13 @@ wc
 
 p.h2o <- grid.arrange(wa, wb, wc, ncol = 3, widths = c(1, 1, 1.3))
 ggsave(plot = p.h2o,"plots/prelim_water_stuff.png", dpi = 600, width = 10, height = 3.7)
+
+## correlation matrix Carbon 
+library(ggcorrplot)
+summary(dt.res)
+w.cor <- round(cor(dt.res[!is.na(dt.res$WUE),.(WUE, TRANS, h2o_flux_sr)]), 1)
+head(w.cor[, 1:6])
+
+ggcorrplot(w.cor, hc.order = TRUE, type = "lower",
+           lab = TRUE)
+
