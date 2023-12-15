@@ -12,6 +12,7 @@ library(dataDownloader)
 # Download Site 1 tent flux data
 get_file(
          # Which repository is it in?
+         # This is the second half of the osf URL
          node = "hk2cy",
          # Which file do you want?
          file = "LI7500_Site 1.zip",
