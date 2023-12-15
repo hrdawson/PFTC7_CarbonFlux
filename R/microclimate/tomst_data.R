@@ -55,3 +55,6 @@ d %>%
 d %>%
   group_by(site, aspect) %>%
   summarise(across(c(T1,T2,T3,moist_vol), mean))
+
+# Export clean data ----
+write.csv(d, "clean_data/PFTC7_Tomst_Data.csv")
