@@ -214,3 +214,25 @@ unzip(
 
 # Remove the zip file once you've unzipped it
 file.remove("raw_data/LI8100/LI8100_Site 5.zip") #let's free some space
+
+
+## PAR data ----
+get_file(
+  # Which repository is it in?
+  node = "hk2cy",
+  # Which file do you want?
+  file = "PAR.zip",
+  # Where do you want the file to go to?
+  path = "raw_data",
+  # Where is the file stored within the OSF repository?
+  remote_path = "raw_data/raw_flux_data")
+
+# Unzip data
+unzip(
+  # Where is the zipped folder?
+  "raw_data/PAR.zip",
+  # Where do you want the files to go to?
+  exdir = "raw_data/PAR")
+
+# Remove the zip file once you've unzipped it
+file.remove("raw_data/PAR.zip") #let's free some space
