@@ -26,8 +26,8 @@ get_started <- function(path = "data_dic", data){
     rename(Variable_name = value) |>
     mutate(TableID = character(length = length(colnames(data))),
            Description = character(length = length(colnames(data))),
-           Unit = character(length = length(colnames(data))),
-           "How measured" = character(length = length(colnames(data))))
+           Units = character(length = length(colnames(data))),
+           "How.measured" = character(length = length(colnames(data))))
 
 
   # write table

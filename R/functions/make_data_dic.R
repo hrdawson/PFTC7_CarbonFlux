@@ -36,7 +36,7 @@ make_data_dictionary <- function(data, description_table, table_ID, keep_table_I
   # combine range and class
   range_class <- class |>
     # join with range
-    left_join(range, by = "Variable name")  %>%
+    left_join(range, by = "Variable.name")  %>%
     mutate(TableID = {{table_ID}})
 
   # make dictionary
@@ -45,13 +45,14 @@ make_data_dictionary <- function(data, description_table, table_ID, keep_table_I
     range_class %>%
       inner_join(description_table %>%
                    filter(is.na(.data$TableID)) %>%
-                   select(-all_of("TableID")), by = "Variable name"),
+                   select(-all_of("TableID")), by = "Variable.name"),
     # join special variables with same name but different meaning across datasets
     range_class %>%
       inner_join(description_table %>%
-                   filter(.data$TableID == table_ID), by = c("Variable name", "TableID"))
+                   filter(.data$TableID == table_ID), by = c("Variable.name", "TableID"))
   ) %>%
-    select(all_of(c("TableID", "Variable name", "Description", "Variable type", "Variable range or levels", "Units", "How measured")))
+    select(all_of(c("TableID", "Variable.name", "Description", "Variable type",
+                    "Variable range or levels", "Units", "How.measured")))
 
   if(!keep_table_ID){
     dictionary <- dictionary %>%
@@ -78,7 +79,7 @@ get_range <- function(data){
 
     # make long table
     pivot_longer(cols = everything(),
-                 names_to = "Variable name",
+                 names_to = "Variable.name",
                  values_to = "Variable range or levels")
 
   range
@@ -91,7 +92,7 @@ get_range <- function(data){
 get_class <- function(data){
 
   class <- map_dfr(data %>% as_tibble, ~enframe(class(.x)[1], value = "Variable type"),
-                   .id = "Variable name") %>%
+                   .id = "Variable.name") %>%
     select(-all_of("name")) %>%
 
     # rename class
