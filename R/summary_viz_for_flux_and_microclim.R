@@ -7,40 +7,41 @@ my_packages <- c("dataDownloader",
                  "hms"
 )
 
-lapply(my_packages, library, character.only = TRUE) 
+lapply(my_packages, library, character.only = TRUE)
 
-get_file(node = "fcbw4",
-         file = "PFTC6_24h_cflux_allsites_2022.csv",
-         path = "clean_data",
-         remote_path = "c_flux_data")
-
-get_file(node = "fcbw4",
-         file = "PFTC6_microclimate_allsites_2022.csv",
-         path = "clean_data",
-         remote_path = "microclimate")
-
-fluxes <- read_csv("clean_data/PFTC6_24h_cflux_allsites_2022.csv")
-
-microclimate <- read_csv("clean_data/PFTC6_microclimate_allsites_2022.csv") %>% 
-  mutate(
-    # site = str_to_lower(site),
-    # site = as_factor(site)
-    destSiteID = as_factor(destSiteID)
-  )
+# This needs to be updated for PFTC7 files
+# get_file(node = "fcbw4",
+#          file = "PFTC6_24h_cflux_allsites_2022.csv",
+#          path = "clean_data",
+#          remote_path = "c_flux_data")
+#
+# get_file(node = "fcbw4",
+#          file = "PFTC6_microclimate_allsites_2022.csv",
+#          path = "clean_data",
+#          remote_path = "microclimate")
+#
+# TEMPfluxes <- read_csv("clean_data/PFTC6_24h_cflux_allsites_2022.csv")
+#
+# microclimate <- read_csv("clean_data/PFTC6_microclimate_allsites_2022.csv") %>%
+#   mutate(
+#     # site = str_to_lower(site),
+#     # site = as_factor(site)
+#     destSiteID = as_factor(destSiteID)
+#   )
 
 # need to cut microclimate so we match the time window of the fluxes
 
-fluxes_startstop <- fluxes %>% 
-  group_by(destSiteID) %>% 
+fluxes_startstop <- TEMPfluxes %>%
+  group_by(destSiteID) %>%
   mutate(
     start = min(datetime),
     stop = max(datetime)
-  ) %>% 
-  select(destSiteID, start, stop) %>% 
+  ) %>%
+  select(destSiteID, start, stop) %>%
   unique()
 
-microclimate <- microclimate %>% 
-  left_join(fluxes_startstop, by = "destSiteID") %>% 
+microclimate <- microclimate %>%
+  left_join(fluxes_startstop, by = "destSiteID") %>%
   filter(
     datetime <= stop
     & datetime >= start
@@ -50,7 +51,7 @@ microclimate <- microclimate %>%
 
 # need to fill the NA in fluxes with average of two points that bookend the missing data so that cumulative plots make sense
 
-fluxes <- fluxes %>%
+fluxes <- TEMPfluxes %>%
   group_by(turfID, type) %>%
   arrange(datetime) %>% # just to be sure
   # Hacking tidyverse to take means of rows above and below
@@ -64,12 +65,11 @@ fluxes <- fluxes %>%
     flux_corrected = replace_na(flux_corrected, mean(c(downup, updown)))
   ) %>%
   select(!c(downup, updown))
-  
-  
-  
+
 # arranging the data ------------------------------------------------------
 
-# first we need to arrange the data in a weirdly mixed long format, microclimate and fluxes together
+# first we need to arrange the data in a weirdly mixed long format,
+# microclimate and fluxes together
 data_long <- full_join(microclimate, fluxes, by = c("datetime", "value" = "flux_corrected", "destSiteID", "turfID")) %>%
   mutate(
     PAR = case_when(
@@ -84,11 +84,11 @@ data_long <- full_join(microclimate, fluxes, by = c("datetime", "value" = "flux_
   ) %>%
   # filter(
   #   type != "NEE" #just in case we are not interested in NEE
-  # ) %>% 
-  select(type, PAR, datetime, destSiteID, value, turfID) %>% 
+  # ) %>%
+  select(type, PAR, datetime, destSiteID, value, turfID) %>%
   rowid_to_column("rowID") %>% #makes each rows unique, helps with pivot wider
   pivot_wider(names_from = "type", values_from = "value") %>% #just a trick to get all the value in the same column (PAR has its own column)
-  pivot_longer(cols = c(PAR, GPP, ER, NEE, air_temperature, soil_temperature, ground_temperature, soil_moisture)) %>% 
+  pivot_longer(cols = c(PAR, GPP, ER, NEE, air_temperature, soil_temperature, ground_temperature, soil_moisture)) %>%
   drop_na(value) %>% #because of the two pivots we created a lot of empty useless rows
   mutate( #making things easier to make graphs later
     name = as_factor(name),
@@ -112,10 +112,10 @@ fluxstarttimes <- tibble(
 # edit: it was actually fast and it is super practical
 plots_making <- function(data_long, fluxstarttimes, font_size)
 {
-  density_microclimate <- data_long %>% 
+  density_microclimate <- data_long %>%
     filter( #we just want microclimate
       name %in% c("air_temperature", "ground_temperature", "soil_moisture", "soil_temperature", "PAR")
-    ) %>% 
+    ) %>%
     ggplot(aes(x=value, fill=destSiteID)) +
     geom_density(alpha=0.6, linewidth = 0.8) +
     scale_fill_viridis(discrete=T) +
@@ -130,15 +130,15 @@ plots_making <- function(data_long, fluxstarttimes, font_size)
           strip.text.x = element_blank(),
           text=element_text(size=font_size)
     )
-  
-  diurnal_fluxes <- data_long %>% 
+
+  diurnal_fluxes <- data_long %>%
     filter(
       # name != "NEE" # in case we are not intersted in NEE
       name %in% c("ER", "GPP", "NEE")
     ) %>%
     ggplot(aes(time, value, color=destSiteID)) +
     geom_point(size=0.05) +
-    geom_vline(data = fluxstarttimes, 
+    geom_vline(data = fluxstarttimes,
                aes(xintercept = lubridate::hm(starttime), color = site), linetype = "dotted") +
     geom_smooth(method = "loess", span = 0.3) +
     facet_grid(name~., scales = "free") +
@@ -151,9 +151,8 @@ plots_making <- function(data_long, fluxstarttimes, font_size)
       y="Fluxes",
       x= "Time"
     )
-  
-  
-  diurnal_microclimate <- data_long %>% 
+
+  diurnal_microclimate <- data_long %>%
     filter(
       name %in% c("air_temperature", "ground_temperature", "soil_moisture", "soil_temperature", "PAR")
     ) %>%
@@ -181,15 +180,15 @@ plots_making <- function(data_long, fluxstarttimes, font_size)
           # axis.ticks.x=element_blank(),
           text=element_text(size=font_size)
     )
-  
-  fluxes_cumul <- data_long %>% 
+
+  fluxes_cumul <- data_long %>%
     filter(
       name %in% c("ER", "GPP", "NEE")
-    ) %>% 
-    group_by(destSiteID, name, turfID) %>% 
+    ) %>%
+    group_by(destSiteID, name, turfID) %>%
     summarise(
       cumul_flux = sum(value) # we sum each fluxes for each turfID
-    ) %>% 
+    ) %>%
     ggplot(aes(y = cumul_flux, x = destSiteID, fill = destSiteID, color = destSiteID)) +
     geom_boxplot(alpha = 0.5, outlier.shape = NA) +
     geom_jitter() +
@@ -226,7 +225,7 @@ plots_making <- function(data_long, fluxstarttimes, font_size)
       axis.ticks.x=element_blank(),
       text=element_text(size=font_size)
     )
-  
+
   patchwork <- diurnal_fluxes + fluxes_cumul + diurnal_microclimate + density_microclimate +
     plot_layout(guides = "collect",
                 ncol = 2,
@@ -234,15 +233,10 @@ plots_making <- function(data_long, fluxstarttimes, font_size)
                 heights = c(3, 5) #this ratio makes sure all the diurnals have the same heigt
     ) +
     plot_annotation(tag_levels = 'A')
-  
+
   return(patchwork)
 }
 
 
 plots_making(data_long, fluxstarttimes, 11)
 ggsave("PFTC6datapaper_figure.png", width = 14, height = 12, units = "in")
-
-
-
-
-
