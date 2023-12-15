@@ -50,11 +50,13 @@ day_resp <- dt.nee |>
   select(c("tav", "nee_lm", "site", "elevation", "aspect", "plot", "day_night")) |>
   rename(t2 = tav, 
          r2 = nee_lm)
+
 night_resp <- dt.nee |>
   filter(day_night == "night" & measurement == "resp") |>
   select(c("tav", "nee_lm", "site", "elevation", "aspect", "plot", "day_night")) |>
   rename(t1 = tav, 
          r1 = nee_lm)
+
 resp_long <- dt.nee |> 
   filter(measurement == "resp") |>
   mutate(r = nee_lm, 
@@ -135,10 +137,12 @@ p.dt.lm <- ggplot() +
         plot.title = element_text(hjust = 0.5))
 p.dt.lm
 
+library(ggpmisc)
 resp_long <- resp_long |>
-  mutate(kT = 1/(8.314*(t+273)), 
+  mutate(kT = 1/((1.38*10^-23)*(t+273)), 
          log_resp = log(-1*r)) |>
   na.omit()
+
 resp_long |>
   ggplot(aes(x = kT, y = log_resp, col = elevation)) + 
   geom_point() + 
@@ -147,13 +151,28 @@ resp_long |>
   xlab("1/kT")+
   theme_classic()
 
-library(ggpmisc)
-ggplot()+geom_point(data = resp, aes(x = 1/(8.314*(t1+273)), y = t1+273, col = elevation)) + 
-  geom_smooth(method = "lm") +
-  theme_classic()
 
-# get nice package 
-#install.packages("data.table")
-library(data.table)
+# Extracting slope from plots --------------------------------------------------
 
+#plotting boltzmann plot
+resp_long |>
+  ggplot(aes(x = kT, y = log_resp, col = elevation)) + 
+  geom_point() + 
+  geom_smooth(method = lm, se=T) +
+  stat_poly_eq()+
+  xlab("1/kT") + theme_classic()
 
+#for each plot obtain activation energy
+#Currently in units of joules, but divide by constant to get eV
+evs <- resp_long %>%
+group_by(elevation, aspect, plot) %>%
+do({coefficients = lm(log_resp ~ kT, data = .)
+  data.frame(slope = coef(coefficients)[2]/(1.602*10^-19))
+  })
+
+#boxplot of activation energies for each plot
+ggplot(data=na.omit(evs),aes(x = elevation, y = slope, col=aspect)) + 
+  geom_boxplot() + theme_classic() +
+  ylab("Activation energy (eV)")
+
+#
