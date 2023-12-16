@@ -349,7 +349,7 @@ f
 
 library(gridExtra)
 p.co2 <- grid.arrange(a, b, c, d, e, f, ncol = 3, widths = c(1,1,1.3))
-ggsave(plot = p.co2,"outputs/plots/prelim_c_stuff.png", dpi = 600, width = 10)
+ggsave(plot = p.co2,"outputs/plots/prelim_c_stuff.png", dpi = 600, height = 6, width = 10)
 
 ## correlation matrix Carbon 
 library(ggcorrplot)
