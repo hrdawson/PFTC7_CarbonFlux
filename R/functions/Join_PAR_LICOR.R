@@ -36,7 +36,8 @@ join_PAR_LICOR <- function(PAR, LICOR, PAR_tz = NULL, LICOR_tz = NULL){
                                 tz = common_time_zone)
   }
   
-  PAR_LICOR <- inner_join(PAR, LICOR, by="POSIXct")
+  PAR_LICOR <- LICOR  %>% 
+    left_join(select(PAR, INPUT1, POSIXct), by="POSIXct")
   
   return(PAR_LICOR)
 }
