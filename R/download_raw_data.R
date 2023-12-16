@@ -268,4 +268,4 @@ get_file(
   # Where do you want the file to go to?
   path = "raw_data/microclimate",
   # Where is the file stored within the OSF repository?
-  remote_path = "raw_data/raw_microclimate_data/")
+  remote_path = "raw_data/raw_microclimate_data/Tomst_data")
