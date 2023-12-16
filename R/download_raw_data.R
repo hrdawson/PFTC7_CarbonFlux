@@ -245,7 +245,7 @@ get_file(
   # Which file do you want?
   file = "Tomst_logger_raw.zip",
   # Where do you want the file to go to?
-  path = "raw_data/raw_microclimate_data",
+  path = "raw_data/microclimate",
   # Where is the file stored within the OSF repository?
   remote_path = "raw_data/raw_microclimate_data/Tomst_data")
 
@@ -254,10 +254,10 @@ unzip(
   # Where is the zipped folder?
   "raw_data/microclimate/Tomst_logger_raw.zip",
   # Where do you want the files to go to?
-  exdir = "raw_data/raw_microclimate_data")
+  exdir = "raw_data/microclimate")
 
 # Remove the zip file once you've unzipped it
-file.remove("raw_data/raw_microclimate_data/Tomst_logger_raw.zip") #let's free some space
+file.remove("raw_data/microclimate/Tomst_logger_raw.zip") #let's free some space
 
 ## Tomst metadata ----
 get_file(
@@ -266,6 +266,6 @@ get_file(
   # Which file do you want?
   file = "Tomst logger IDs.csv",
   # Where do you want the file to go to?
-  path = "raw_data/raw_microclimate_data",
+  path = "raw_data/microclimate",
   # Where is the file stored within the OSF repository?
   remote_path = "raw_data/raw_microclimate_data/Tomst_data")
