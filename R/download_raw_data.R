@@ -20,7 +20,7 @@ unzip(
   # Where is the zipped folder?
   "raw_data/LI7500/LI7500_Site 1.zip",
   # Where do you want the files to go to?
-  exdir = "raw_data/LI7500/Site 1")
+  exdir = "raw_data/LI7500/")
 
 # Remove the zip file once you've unzipped it
 file.remove("raw_data/LI7500/LI7500_Site 1.zip") #let's free some space
@@ -41,7 +41,7 @@ unzip(
   # Where is the zipped folder?
   "raw_data/LI7500/LI7500_Site 2.zip",
   # Where do you want the files to go to?
-  exdir = "raw_data/LI7500/Site 2")
+  exdir = "raw_data/LI7500/")
 
 # Remove the zip file once you've unzipped it
 file.remove("raw_data/LI7500/LI7500_Site 2.zip") #let's free some space
@@ -62,7 +62,7 @@ unzip(
   # Where is the zipped folder?
   "raw_data/LI7500/LI7500_Site 3.zip",
   # Where do you want the files to go to?
-  exdir = "raw_data/LI7500/Site 3")
+  exdir = "raw_data/LI7500/")
 
 # Remove the zip file once you've unzipped it
 file.remove("raw_data/LI7500/LI7500_Site 3.zip") #let's free some space
@@ -83,7 +83,7 @@ unzip(
   # Where is the zipped folder?
   "raw_data/LI7500/LI7500_Site 4.zip",
   # Where do you want the files to go to?
-  exdir = "raw_data/LI7500/Site 4")
+  exdir = "raw_data/LI7500/")
 
 # Remove the zip file once you've unzipped it
 file.remove("raw_data/LI7500/LI7500_Site 4.zip") #let's free some space
@@ -104,7 +104,7 @@ unzip(
   # Where is the zipped folder?
   "raw_data/LI7500/LI7500_Site 5.zip",
   # Where do you want the files to go to?
-  exdir = "raw_data/LI7500/Site 5")
+  exdir = "raw_data/LI7500/")
 
 # Remove the zip file once you've unzipped it
 file.remove("raw_data/LI7500/LI7500_Site 5.zip") #let's free some space
@@ -126,7 +126,7 @@ unzip(
   # Where is the zipped folder?
   "raw_data/LI8100/LI8100_Site 1.zip",
   # Where do you want the files to go to?
-  exdir = "raw_data/LI8100/Site 1")
+  exdir = "raw_data/LI8100/")
 
 # Remove the zip file once you've unzipped it
 file.remove("raw_data/LI8100/LI8100_Site 1.zip") #let's free some space
@@ -147,7 +147,7 @@ unzip(
   # Where is the zipped folder?
   "raw_data/LI8100/LI8100_Site 2.zip",
   # Where do you want the files to go to?
-  exdir = "raw_data/LI8100/Site 2")
+  exdir = "raw_data/LI8100/")
 
 # Remove the zip file once you've unzipped it
 file.remove("raw_data/LI8100/LI8100_Site 2.zip") #let's free some space
@@ -168,7 +168,7 @@ unzip(
   # Where is the zipped folder?
   "raw_data/LI8100/LI8100_Site 3.zip",
   # Where do you want the files to go to?
-  exdir = "raw_data/LI8100/Site 3")
+  exdir = "raw_data/LI8100/")
 
 # Remove the zip file once you've unzipped it
 file.remove("raw_data/LI8100/LI8100_Site 3.zip") #let's free some space
@@ -189,7 +189,7 @@ unzip(
   # Where is the zipped folder?
   "raw_data/LI8100/LI8100_Site 4.zip",
   # Where do you want the files to go to?
-  exdir = "raw_data/LI8100/Site 4")
+  exdir = "raw_data/LI8100/")
 
 # Remove the zip file once you've unzipped it
 file.remove("raw_data/LI8100/LI8100_Site 4.zip") #let's free some space
@@ -210,7 +210,7 @@ unzip(
   # Where is the zipped folder?
   "raw_data/LI8100/LI8100_Site 5.zip",
   # Where do you want the files to go to?
-  exdir = "raw_data/LI8100/Site 5")
+  exdir = "raw_data/LI8100/")
 
 # Remove the zip file once you've unzipped it
 file.remove("raw_data/LI8100/LI8100_Site 5.zip") #let's free some space
@@ -232,7 +232,7 @@ unzip(
   # Where is the zipped folder?
   "raw_data/PAR.zip",
   # Where do you want the files to go to?
-  exdir = "raw_data/PAR")
+  exdir = "raw_data/")
 
 # Remove the zip file once you've unzipped it
 file.remove("raw_data/PAR.zip") #let's free some space
@@ -268,4 +268,4 @@ get_file(
   # Where do you want the file to go to?
   path = "raw_data/microclimate",
   # Where is the file stored within the OSF repository?
-  remote_path = "raw_data/raw_microclimate_data/Tomst_data")
+  remote_path = "raw_data/raw_microclimate_data/")
