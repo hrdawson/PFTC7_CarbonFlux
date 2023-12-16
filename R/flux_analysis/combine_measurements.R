@@ -58,6 +58,8 @@ licor_nee <- licor_files %>%
                 signal_threshold = 95) %>%  
   mutate(filename = basename(filename)) 
 
+fwrite(licor_nee, "outputs/licor_nee_for_HRD.csv")
+
 #modify and restructure the data
 dt.nee <- licor_nee |>
   rename(file = filename) |>
@@ -100,7 +102,7 @@ dt.nee <- dt.nee[!abs(nee_best) > 20, ]
 
 #split up in resp and photo and join again later to calculate GPP 
 dt.resp <- dt.nee[flux == "ER" & day_night == "day" , .(nee_best, day_night, plot, elevation, aspect, redo, file)]
-dt.photo <- dt.nee[flux == "NEE" & day_night == "day", .(nee_best, day_night, plot, elevation, aspect, redo, file)]
+dt.photo <- dt.nee[flux == "NEE" & day_night == "day", .(nee_best, day_night, plot, elevation, aspect, redo, file, tav)]
 
 
 
@@ -208,7 +210,8 @@ dt.sr <- dt.sr[!co2_flux_sr < 0]
 ## COMBINE ----------------
 # combine the relevant information from the different sources 
 dt.carb[, plotID := paste0("Plot_", plot)]
-dt.carb.sub <- dt.carb[,.(plotID, elevation, aspect, GPP, NEE, ER)] 
+dt.carb[, temperature := tav]
+dt.carb.sub <- dt.carb[,.(plotID, elevation, aspect, GPP, NEE, ER, temperature)] 
 dt.water[, plotID := paste0("Plot_", plot)]
 dt.water.sub <- dt.water[,.(plotID, elevation, aspect, TRANS, ET)] 
 dt.sr.sub <- dt.sr[,.(plotID, elevation, aspect, co2_flux_sr, h2o_flux_sr, transectID)]
