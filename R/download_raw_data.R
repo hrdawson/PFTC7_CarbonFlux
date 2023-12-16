@@ -2,6 +2,7 @@
 # Use RStudio's handy script menu to jump to the data you need
 # You should only need to download data once, unless you know they have been updated
 # If you've been away from the project for awhile, you should download them again
+library(dataDownloader)
 
 # Tent flux (LI7500) data ----
 ## Site 1 LI7500 data ----
