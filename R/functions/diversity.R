@@ -15,7 +15,8 @@ library(ggdist)
 library(ggbeeswarm)
 #install.packages("ggbeeswarm")
 #install.packages("ggdist")
-##HOW TO DO IT NICE####
+
+
 ## calculating NEE, ER, GPP, NPP, C use efficiency , Water use efficiency, 
 ## GPP = NEE - ER
 ## NPP = GPP - (ER-SR)
@@ -203,7 +204,7 @@ dt.water[, ET := et_best,]
 ## SOIL RESPIRATION ----------------------
 
 #get file locations
-filesSR <- dir(path = "../data/raw_data/", pattern = ".81x", full.names = TRUE, recursive = TRUE)
+filesSR <- dir(path = "raw_data/", pattern = ".81x", full.names = TRUE, recursive = TRUE)
 
 toi <- 120:179 #time of interest (not strictly necessary as this time is also the default)
 
@@ -267,13 +268,13 @@ dt.res[, `:=` (NPP_mean = mean(NPP, na.rm = TRUE),
 
 str(dt.res)
 
-#HOW TO DO IT NOT SO NICE#####
+#Shannon Diversity#####
 
 #Read the CSV file
-data <- read.csv("veg_cover.csv")
+veg_cover_data <- read.csv("raw_data/veg_cover.csv")
 
 # Convert 'Cover' column to numeric
-data$Cover <- as.numeric(data$Cover)
+veg_cover_data$Cover <- as.numeric(veg_cover_data$Cover)
 
 # Function to calculate Shannon Diversity Index
 shannon_diversity <- function(cover_values) {
@@ -282,26 +283,33 @@ shannon_diversity <- function(cover_values) {
 }
 
 # Calculate Shannon Diversity Index for each plot
-diversity_results <- data %>%
+diversity_results <- veg_cover_data %>%
   group_by(plotID) %>%
   summarise(Shannon_Index = shannon_diversity(Cover))
 
+#NOW YOU NEED TO PLOT SPECIES RICHNESS PER PLOT VS NPP; NEE; AND GPP
+
+# Function to calculate Species Richness
+species_richness <- function(cover_values) {
+  sum(!is.na(cover_values))
+}
+
+# Calculate Species Richness for each plot
+richness_results <- veg_cover_data %>%
+  group_by(plotID) %>%
+  summarise(Species_Richness = species_richness(Cover))
+
+
 # Print the results
 print(diversity_results)
+print(richness_results)
 
-# Create a table with styling
-table <- kable(diversity_results, format = "html", caption = "Shannon Diversity Index for Each Plot") %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+#Merge them
 
-# Print the styled table
-print(table)
+diversity_results <- merge(diversity_results, richness_results, by = "plotID", all.x = TRUE)
+# Print the merged dataframe
+print(data_full)
 
-# Plot the results
-# ggplot(diversity_results, aes(x = plotID, y = Shannon_Index, fill = plotID)) +
-#   geom_bar(stat = "identity", show.legend = FALSE) +
-#   labs(title = "Shannon Diversity Index for Each Plot",
-#        x = "Plot ID", y = "Shannon Diversity Index") +
-#   theme_minimal()
 
 # Extract site information from plotID
 diversity_results$Site <- gsub("_E_.*|_W_.*", "", diversity_results$plotID)
@@ -309,20 +317,6 @@ diversity_results$Site <- gsub("_E_.*|_W_.*", "", diversity_results$plotID)
 diversity_results$Slope <- gsub("s_.*_(E|W)_.*", "\\1", diversity_results$plotID)
 
 # Plotting
-# ggplot(diversity_results, aes(x = factor(Site), y = Shannon_Index, fill = factor(Site))) +
-#   stat_summary(fun = mean, geom = "bar", position = "dodge", color = "black") +
-#   stat_summary(
-#     fun.data = mean_se,
-#     geom = "errorbar",
-#     position = position_dodge(0.9),
-#     color = "black",
-#     width = 0.2
-#   ) +
-#   facet_wrap(~Slope) +
-#   labs(title = "Mean Shannon Diversity Index by Site and Slope",
-#        x = "Site", y = "Mean Shannon Diversity Index") +
-#   theme_minimal()
-
 # Plotting with letters indicating different confidence levels
 ggplot(diversity_results, aes(x = factor(Site), y = Shannon_Index, fill = factor(Site))) +
   stat_summary(fun = mean, geom = "bar", position = "dodge", color = "black") +
@@ -341,61 +335,77 @@ ggplot(diversity_results, aes(x = factor(Site), y = Shannon_Index, fill = factor
                      method = "t.test", label = "p.signif")
 
 
-#Now I need to relate this information with the licor nee data
+#Now I need to relate this information with the licor nee data from the dt.res df.
 
-# Read the CSV file
-licor_data <- read.csv("licor_nee.csv")
 
-#I extract only the columns I want to use
-licor_data <- select(licor_data, filename, nee_lm)
+#I extract only the columns I want to use:
+licor_data <- select(dt.res, plotID, elevation, aspect, GPP, NEE, NPP)
 
-# Create a mapping between original and desired values
-site_mapping <- c("2000" = "s_1", "2200" = "s_2", "2400" = "s_3", "2600" = "s_4", "2800" = "s_5")
-
-# Extract Site and Slope from filename
+#I establish the same ID system
+str(licor_data)
 licor_data <- licor_data %>%
-  mutate(
-    Site = sub("\\d+_(\\d+)_.*", "\\1", filename),
-    Site = ifelse(Site %in% names(site_mapping), site_mapping[Site], as.character(Site)),
-    Slope = ifelse(grepl("_east_", filename), "E", "W")
+  mutate(site = case_when(
+    elevation == 2000 ~ 1,
+    elevation == 2200 ~ 2,
+    elevation == 2400 ~ 3,
+    elevation == 2600 ~ 4,
+    elevation == 2800 ~ 5
+  ),
+    ID = paste0(
+      "s_", 
+      site, 
+      "_", 
+      ifelse(aspect == "east", "E", "W"), 
+      "_", 
+      as.numeric(gsub("Plot_", "", plotID))
+    )
   )
 
-# Extract Site and Slope from filename
-licor_data <- licor_data %>%
-  mutate(
-    Site = sub("\\d+_(\\d+)_.*", "\\1", filename),
-    Site = ifelse(Site %in% names(site_mapping), site_mapping[Site], as.character(Site)),
-    Slope = ifelse(grepl("_east_", filename), "E", "W"),
-    Time = ifelse(grepl("_day_", filename), "day", "night"),  # Add Time column
-    Measurement = ifelse(grepl("_photo", filename), "photo", "resp")  # Add Measurement column
-  )
-
-# Create the plotID column
-licor_data <- licor_data %>%
-  group_by(Site, Slope) %>%
-  mutate(
-    plotID = paste0("", Site, "_", Slope, "_", row_number())
-  ) %>%
-  ungroup()
+#Rename the plotID to ID in the veg_cover_data:
+colnames(diversity_results)[colnames(diversity_results) == "plotID"] <- "ID"
 
 #Now we need to join the df:
 
 # Merge the two dataframes
-data_full <- left_join(licor_data, diversity_results, by = "plotID")
-
+data_full <- merge(licor_data, diversity_results, by = "ID", all.x = TRUE)
 # Print the merged dataframe
 print(data_full)
 
-# Select columns 1, 2, 4, 6, 7, 8
-data_full <- data_full[, c(2:8)]
-
 #Now we can plot nee vs shannon
 # Plotting
-ggplot(data_full, aes(x = Shannon_Index, y = nee_lm, color = Site.x)) +
-  stat_halfeye(aes(fill = Site.x), width = 0.2, alpha = 0.2) +
-  facet_grid(Measurement ~ Slope.x, scales = "free", switch = "y") +
-  labs(title = "Scatter Plots of nee_lm vs Shannon Index ",
-       x = "Shannon Index", y = "nee_lm") +
-  theme_minimal() +
-  theme(legend.position = "top")
 
+
+# Create the plot
+plot_NEE <- ggplot(data_full, aes(x = Shannon_Index, y = NEE, color = site, shape = aspect, linetype = aspect)) +
+  geom_point(size = 3) +
+  geom_smooth(method = "loess", se = TRUE, color = "black") +
+  scale_color_viridis_c() +
+  labs(title = "NEE vs Shannon Index",
+       x = "Shannon Index",
+       y = "NEE") +
+  theme_minimal()
+
+#Now GPP vs Shannon
+plot_GPP <- ggplot(data_full, aes(x = Shannon_Index, y = GPP, color = site, shape = aspect, linetype = aspect)) +
+  geom_point(size = 3) +
+  geom_smooth(method = "loess", se = TRUE, color = "black") +
+  scale_color_viridis_c() +
+  labs(title = "GPP vs Shannon Index",
+       x = "Shannon Index",
+       y = "GPP") +
+  theme_minimal()
+
+#Now NPPvs Shannon
+plot_NPP <- ggplot(data_full, aes(x = Shannon_Index, y = NPP, color = site, shape = aspect, linetype = aspect)) +
+  geom_point(size = 3) +
+  geom_smooth(method = "loess", se = TRUE, color = "black") +
+  scale_color_viridis_c() +
+  labs(title = "NPP vs Shannon Index",
+       x = "Shannon Index",
+       y = "NPP") +
+  theme_minimal()
+
+# Arrange the plots in a 1x3 grid using mfrow
+#install.packages("gridExtra")
+library(gridExtra)
+grid.arrange(plot_GPP, plot_NEE, plot_NPP, nrow=3)
