@@ -51,3 +51,22 @@ ggplot(FLIRflat |> filter(temp_C > 0) |> drop_na(siteID),
   facet_grid(~day.night, scales = "free_x") +
   theme(legend.position = "none")
 
+# Import IR temp gun data ----
+IRtemp = read.csv("raw_data/PFTC7_SA_raw_fluxes_2023.csv") |>
+  # flag erroneous reads
+  mutate(flag = case_when(
+    str_detect(Remarks, "IRt on soil") ~ "discard",
+    TRUE ~ "okay"
+  )) |>
+  select(day.night:plotID, flag, IR_temp_1:IR_temp_5) |>
+  pivot_longer(cols = IR_temp_1:IR_temp_5, names_to = "delete", values_to = "temp_C") |>
+  drop_na(siteID) |>
+  filter(flag == "okay")
+
+# Plot IR temp gun data
+ggplot(IRtemp,
+       aes(x = temp_C, y = as.factor(siteID), fill = aspect)) +
+  geom_density_ridges(alpha = 0.5) +
+  theme_ridges() +
+  facet_grid(~day.night, scales = "free_x") +
+  theme(legend.position = "none")
