@@ -2,7 +2,6 @@ require(cpop)
 require(ggplot2)
 source("./Join_PAR_LICOR.R")
 source("./neet_calc_wav.R")
-source("./flux_calc_seg.R")
 require(dplyr)
 require(lubridate)
 require(tidyverse)
@@ -33,7 +32,7 @@ flux_calc_seg <- function(fluxfiles, PAR_files=NULL,
     }
   }
   else{
-    PAR_dat = NULL
+    PAR_comb = NULL
   }
     
   if(dat_sel == "manual"){
