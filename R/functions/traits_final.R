@@ -67,5 +67,14 @@ filtered_traits$StdValue <- as.numeric(filtered_traits$StdValue)
 filtered_traits <- filtered_traits[complete.cases(filtered_traits[, c("trait_value", "StdValue")]), ]
 
 
+# Group by species and trait, calculate mean and standard deviation
+result <- filtered_traits %>%
+  group_by(species_name, trait_name) %>%
+  summarise(mean_value = mean(trait_value, na.rm = TRUE),
+            std_dev = sd(StdValue, na.rm = TRUE))
+
+# Print the result
+print(result)
+
 
 
