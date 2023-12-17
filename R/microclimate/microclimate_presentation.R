@@ -22,3 +22,12 @@ ggplot(tomst, aes(x = value, y = as.factor(site), fill = aspect)) +
   theme_ridges() +
   facet_grid(~variable, scales = "free_x") +
   theme(legend.position = "none")
+
+# make trial plot with basic FLIR
+ggplot(FLIRflat |> filter(temp_C > 0) |> drop_na(siteID),
+       aes(x = temp_C, y = as.factor(siteID), fill = aspect)) +
+  geom_density_ridges(alpha = 0.5) +
+  theme_ridges() +
+  facet_grid(~day.night, scales = "free_x") +
+  theme(legend.position = "none")
+
