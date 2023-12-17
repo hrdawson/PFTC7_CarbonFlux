@@ -193,6 +193,7 @@ dt.water <- left_join(dt.tarp, dt.light, by = c("day.night", "plot", "elevation"
 #calculate GPP
 dt.water[, TRANS := et_best - eva_best,]
 dt.water[, ET := et_best,]
+dt.water[, EVAP := eva_best]
 
 
 ## SOIL RESPIRATION ----------------------
@@ -224,7 +225,7 @@ dt.carb[, temperature := tav]
 dt.carb.sub <- dt.carb[,.(plotID, elevation, aspect, GPP, NEE, ER, temperature)] 
 summary(dt.carb.sub) # NA's in ER and thus in GPP
 dt.water[, plotID := paste0("Plot_", plot)]
-dt.water.sub <- dt.water[,.(plotID, elevation, aspect, TRANS, ET)] 
+dt.water.sub <- dt.water[,.(plotID, elevation, aspect, TRANS, ET, EVAP)] 
 summary(dt.water.sub) #all good, all there
 dt.sr.sub <- dt.sr[,.(plotID, elevation, aspect, co2_flux_sr, h2o_flux_sr, transectID)]
 summary(dt.sr.sub) #all good, all there
@@ -244,15 +245,21 @@ dt.com <- left_join(dt.com, dt.sr.sub, by = c("plotID", "aspect", "elevation"))
 # gives e.g., a negative NPP and GPP which is weird but somewhat right
 dt.res <- dt.com %>% mutate(
   ER = ER*-1,
-  GPP = GPP*-1,
+  GPP = GPP,
   NEE = NEE*-1,
-  TRANS = TRANS*-1,
-  ET = ET*-1,
-  NPP = GPP + (ER - co2_flux_sr), 
+  TRANS = TRANS,
+  ET = ET,
+  EVAP = EVAP,
+  NPP = GPP - (ER - co2_flux_sr), 
   CUE = NPP/GPP,
   WUE = NPP / TRANS,
   elevation = as.numeric(elevation)
 )
+
+
+quantile(dt.com$ER*-1, na.rm = TRUE)
+quantile(dt.com$co2_flux_sr, na.rm = TRUE)
+quantile(dt.com$PR, na.rm = TRUE)
 
 #calculate transect means
 dt.res[, `:=` (NPP_mean = mean(NPP, na.rm = TRUE),
@@ -281,21 +288,20 @@ a <- ggplot(data = dt.res) +
   geom_boxplot(aes(x = as.factor(elevation), y = GPP, fill = aspect, color = aspect), linewidth = 1.2, alpha = 0.7) +
   scale_color_met_d(name = "Cassatt2", direction = - 1) +
   scale_fill_met_d(name = "Cassatt2", direction = - 1) +
-  labs(y = "CO2 (ppm/s/m2)", title = "Gross primary productivity (GPP)", x = "Elevation") +
+  labs(y = "CO2 (µmol/m2/s)", title = "Gross primary productivity (GPP)", x = "Elevation") +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5),
         legend.position = "none")
 
 a
 
-?scale_color_met_d
 
 b <- ggplot(data = dt.res) + 
   geom_hline(yintercept = 0, linetype = "dashed", linewidth = 1.1, color = "grey50") +
   geom_boxplot(aes(x = as.factor(elevation), y = NPP, fill = aspect, color = aspect), linewidth = 1.2, alpha = 0.7) +
   scale_color_met_d(name = "Cassatt2", direction = -1) +
   scale_fill_met_d(name = "Cassatt2", direction = -1) +
-  labs(y = "CO2 (ppm/s/m2)", title = "Net primary productivity (NPP)", x = "Elevation") +
+  labs(y = "CO2 (µmol/m2/s)", title = "Net primary productivity (NPP)", x = "Elevation") +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5),
         legend.position = "none")
@@ -318,7 +324,7 @@ d <- ggplot(data = dt.res) +
   geom_boxplot(aes(x = as.factor(elevation), y = ER, fill = aspect, color = aspect), linewidth = 1.2, alpha = 0.7) +
   scale_color_met_d(name = "Cassatt2", direction = -1) +
   scale_fill_met_d(name = "Cassatt2", direction = -1) +
-  labs(y = "CO2 (ppm/s/m2)", title = "Ecosystem respiration (ER)", x = "Elevation") +
+  labs(y = "CO2 (µmol/m2/s)", title = "Ecosystem respiration (ER)", x = "Elevation") +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5), 
         legend.position = "none")
@@ -330,7 +336,7 @@ e <- ggplot(data = dt.res) +
   geom_boxplot(aes(x = as.factor(elevation), y = NEE, fill = aspect, color = aspect), linewidth = 1.2, alpha = 0.7) +
   scale_color_met_d(name = "Cassatt2", direction = -1) +
   scale_fill_met_d(name = "Cassatt2", direction = -1) +
-  labs(y = "CO2 (ppm/s/m2)", title = "Net ecosystem exchange (NEE)", x = "Elevation") +
+  labs(y = "CO2 (µmol/m2/s)", title = "Net ecosystem exchange (NEE)", x = "Elevation") +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5),
         legend.position = "none")
@@ -341,7 +347,7 @@ f <- ggplot(data = dt.res) +
   geom_boxplot(aes(x = as.factor(elevation), y = co2_flux_sr, fill = aspect, color = aspect), linewidth = 1.2, alpha = 0.7) +
   scale_color_met_d(name = "Cassatt2", direction = -1) +
   scale_fill_met_d(name = "Cassatt2", direction = -1) +
-  labs(y = "CO2 (ppm/s/m2)", title = "Soil respiration (SR)", x = "Elevation") +
+  labs(y = "CO2 (µmol/m2/s)", title = "Soil respiration (SR)", x = "Elevation") +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5))
 
@@ -368,7 +374,7 @@ ggplot(data = dt.res) +
   geom_line(aes(x = elevation, y = ET_mean, color = "ET"), linewidth = 1.2) +
   geom_line(aes(x = elevation, y = WUE_mean, color = "WUE"), linewidth = 1.2) +
   facet_wrap(~ aspect) +
-  labs(y = "ppm/s/m2", title = "H2O") +
+  labs(y = "mmol/m2/s", title = "H2O") +
   theme_minimal()
 
 wa <- ggplot(data = dt.res) + 
@@ -376,7 +382,7 @@ wa <- ggplot(data = dt.res) +
   geom_boxplot(aes(x = as.factor(elevation), y = ET*-1, fill = aspect, color = aspect), linewidth = 1.2, alpha = 0.7) +
   scale_color_met_d(name = "Cassatt2", direction = -1) +
   scale_fill_met_d(name = "Cassatt2", direction = -1) +
-  labs(y = "H2O (ppm/s/m2)", title = "Evapo-transpiration", x = "Elevation") +
+  labs(y = "H2O (mmol/m2/s)", title = "Evapo-transpiration", x = "Elevation") +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5),
         legend.position = "none")
@@ -388,7 +394,7 @@ wb <- ggplot(data = dt.res) +
   geom_boxplot(aes(x = as.factor(elevation), y = TRANS*-1, fill = aspect, color = aspect), linewidth = 1.2, alpha = 0.7) +
   scale_color_met_d(name = "Cassatt2", direction = -1) +
   scale_fill_met_d(name = "Cassatt2", direction = -1) +
-  labs(y = "H2O (ppm/s/m2)", title = "Transpiration", x = "Elevation") +
+  labs(y = "H2O (mmol/m2/s)", title = "Transpiration", x = "Elevation") +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5),
         legend.position = "none")
@@ -406,8 +412,20 @@ wc <- ggplot(data = dt.res) +
 
 wc
 
-p.h2o <- grid.arrange(wa, wb, wc, ncol = 3, widths = c(1, 1, 1.3))
-ggsave(plot = p.h2o,"outputs/plots/prelim_water_stuff.png", dpi = 600, width = 10, height = 3.7)
+wd <- ggplot(data = dt.res) + 
+  geom_hline(yintercept = 0, linetype = "dashed", linewidth = 1.1, color = "grey50") +
+  geom_boxplot(aes(x = as.factor(elevation), y = EVAP*-1, fill = aspect, color = aspect), linewidth = 1.2, alpha = 0.7) +
+  scale_color_met_d(name = "Cassatt2", direction = -1) +
+  scale_fill_met_d(name = "Cassatt2", direction = -1) +
+  labs(y = "H2O (mmol/m2/s)", title = "Evaporation", x = "Elevation") +
+  theme_minimal() +
+  ylim(-1, 4) +
+  theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
+
+wd
+
+p.h2o <- grid.arrange(wa, wb, wc, wd, ncol = 3, widths = c(1, 1, 1.3))
+ggsave(plot = p.h2o,"outputs/plots/prelim_water_stuff.png", dpi = 600, width = 10, height = 6)
 
 ## correlation matrix Carbon 
 library(ggcorrplot)
