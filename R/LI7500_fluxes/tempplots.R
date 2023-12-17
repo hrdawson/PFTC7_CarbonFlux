@@ -7,11 +7,11 @@ file.exists("R/functions/flux_calc_own.R")
 
 
 # Look for flux files in a folder
-licor_files <- Map(c, co2fluxtent::read_files("raw_data/Site 1"), 
-                   co2fluxtent::read_files("raw_data/Site 2"),
-                   co2fluxtent::read_files("raw_data/Site 3"),
-                   co2fluxtent::read_files("raw_data/Site 4"),
-                   co2fluxtent::read_files("raw_data/Site 5"))
+licor_files <- Map(c, co2fluxtent::read_files("raw_data/LI7500/LI7500_Site 1"), 
+                   co2fluxtent::read_files("raw_data/LI7500/LI7500_Site 2"),
+                   co2fluxtent::read_files("raw_data/LI7500/LI7500_Site 3"),
+                   co2fluxtent::read_files("raw_data/LI7500/LI7500_Site 4"),
+                   co2fluxtent::read_files("raw_data/LI7500/LI7500_Site 5"))
 
 # Check if the files are ok
 licor_files <- test_flux_files(licor_files, skip = 3, min_rows = 50)
