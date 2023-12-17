@@ -30,7 +30,7 @@ unzip(
   # Where is the zipped folder?
   "raw_data/LI7500/LI7500_Site 1.zip",
   # Where do you want the files to go to?
-  exdir = "raw_data/LI7500/Site 1")
+  exdir = "raw_data/LI7500/")
 
 # Remove the zip file once you've unzipped it
 file.remove("raw_data/LI7500/LI7500_Site 1.zip") #let's free some space
