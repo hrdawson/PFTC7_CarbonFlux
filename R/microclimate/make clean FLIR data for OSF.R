@@ -1,6 +1,10 @@
 # Make clean FLIR data file for OSF
 
 # Flatten Rds to data frame ----
+FLIRraw = get(load("raw_data/flir_raw_2023-12-17.Rdata"))
+
+FLIRrawdata = FLIRraw[["raw_dat"]]
+
 FLIRraw = readRDS("raw_data/microclimate/FLIR_cropped.Rds") |>
   lapply(FUN = as.numeric)
 
