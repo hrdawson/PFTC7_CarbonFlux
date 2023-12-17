@@ -22,14 +22,14 @@ calcSR <- function(data, area = 317.8, volume = 1807.6){
                     plotID = NA, siteID = NA,
                     elevation = NA, aspect = NA, 
                     uniqueID = NA, transectID = NA,
-                    co2_flux = NA, h2o_flux = NA)
+                    co2_flux_sr = NA, h2o_flux_sr = NA)
   
   df.res <- data.frame(co2_dry = NA, co2_rsq = NA, 
                        h2o_raw = NA, h2o_rsq = NA, 
                        plotID = NA, siteID = NA,
                        elevation = NA, aspect = NA, 
                        uniqueID = NA, transectID = NA,
-                       co2_flux = NA, h2o_flux = NA)
+                       co2_flux_sr = NA, h2o_flux_sr = NA)
   
   
   area <- 317.8/10000 #most likely in m2
@@ -63,8 +63,8 @@ calcSR <- function(data, area = 317.8, volume = 1807.6){
       aspect = unique(data[data$uniqueID == unique, ]$aspect),
       transectID = unique(paste0(data[data$uniqueID == unique, ]$elevation, "_", unique(data[data$uniqueID == unique, ]$aspect)))
     ) %>% mutate(
-      co2_flux = (volume * pressure * (1000) * co2_dry)/(R * area * (temp + 273.15)), 
-      h2o_flux = (volume * pressure * (1000) * h2o_raw)/(R * area * (temp + 273.15))
+      co2_flux_sr = (volume * pressure * (1000) * co2_dry)/(R * area * (temp + 273.15)), 
+      h2o_flux_sr = (volume * pressure * (1000) * h2o_raw)/(R * area * (temp + 273.15))
       
       
     )
