@@ -137,6 +137,23 @@ p.dt.lm <- ggplot() +
         plot.title = element_text(hjust = 0.5))
 p.dt.lm
 
+#plotting temps for each aspect
+p.temp <- ggplot() +
+  geom_boxplot(data = resp_long[resp_long$day_night == "day",], aes(x = aspect, y = tav, fill = aspect), alpha = 0.8, outlier.shape = NA) +
+  geom_jitter(data = resp_long[resp_long$day_night == "day",], aes(x = aspect, y = tav, color = aspect), alpha = 0.3, size = 4) +
+  facet_wrap(~ elevation) +
+  scale_color_manual(values = c("darkolivegreen4", "khaki2")) + 
+  scale_fill_manual(values = c("darkolivegreen4", "khaki2")) + 
+  geom_hline(linetype = "dashed", color = "grey50") +
+  labs(title = "", x = "Aspect", y = "Average daytime air temperature (C)") +
+  theme_bw() +
+  theme(legend.position = "none", 
+        plot.title = element_text(hjust = 0.5))
+p.temp
+
+resp_long[resp_long$day_night == "day",]
+
+# Extracting slope from plots --------------------------------------------------
 library(ggpmisc)
 resp_long <- resp_long |>
   mutate(kT = 1/((1.38*10^-23)*(t+273)), 
@@ -151,17 +168,14 @@ resp_long |>
   xlab("1/kT")+
   theme_classic()
 
-
-# Extracting slope from plots --------------------------------------------------
-
 #plotting boltzmann plot
 resp_long |>
-  ggplot(aes(x = kT, y = log_resp, col = day_night)) + 
+  ggplot(aes(x = 1/tav, y = log_resp, col=day_night)) + 
   facet_wrap(~elevation)+
   geom_point() + 
   geom_smooth(method = "lm", se=T) +
   stat_poly_eq()+
-  xlab("1/kT") + theme_classic()
+  xlab("1/T") + theme_classic()
 
 #for each plot obtain activation energy
 #Currently in units of joules, but divide by constant to get eV
@@ -191,9 +205,49 @@ summary(lm)
 
 coefficients(lm)[2]/(1.602*10^-19)
 
-confint(lm)
+confint(lm)/(1.602*10^-19)
 
--2.708816e-20/(1.602*10^-19)
+## looking at trait data ----
+get_file(
+  # Which repository is it in?
+  node = "hk2cy",
+  # Which file do you want?
+  file = "PFTC7_SA_cleanish_traits_2023.csv",
+  # Where do you want the file to go to?
+  path = "raw_data/trait_data/",
+  # Where is the file stored within the OSF repository?
+  remote_path = "trait_data/")
 
--7.922223e-20/(1.602*10^-19)
+trait_data <- read.csv("raw_data/trait_data/PFTC7_SA_cleanish_traits_2023.csv")
+trait_data <- na.omit(trait_data[,c("elevation_m_asl","sla_cm2_g","aspect")])
 
+#plotting temps for each aspect
+trait_box <- ggplot() +
+  geom_boxplot(data = trait_data, aes(x = aspect, y = sla_cm2_g, fill = aspect), alpha = 0.8, outlier.shape = NA) +
+  geom_jitter(data = trait_data, aes(x = aspect, y = sla_cm2_g, color = aspect), alpha = 0.3, size = 4) +
+  facet_wrap(~ elevation_m_asl) +
+  scale_color_manual(values = c("darkolivegreen4", "khaki2")) + 
+  scale_fill_manual(values = c("darkolivegreen4", "khaki2")) + 
+  geom_hline(linetype = "dashed", color = "grey50") +
+  labs(title = "", x = "Aspect", y = "Average daytime air temperature (C)") +
+  theme_bw() +
+  theme(legend.position = "none", 
+        plot.title = element_text(hjust = 0.5))
+trait_box
+
+
+trait_dist <- ggplot(data = trait_data, aes(log(sla_cm2_g), fill=aspect)) +
+  geom_density() +
+  facet_wrap(~ elevation_m_asl) +
+  labs(title = "", x = "SLA (cm2)", y = "Density") +
+  theme_bw() +
+  theme(legend.position = "none", plot.title = element_text(hjust = 0.5))
+trait_dist
+
+library(ggridges)
+
+ggplot(trait_data, aes(x = log(sla_cm2_g), y=elevation_m_asl,group=elevation_m_asl)) +
+  geom_density_ridges() +
+  theme_ridges() +
+  theme(legend.position = "none")
+ 
