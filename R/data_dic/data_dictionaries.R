@@ -11,10 +11,6 @@ library(tidyverse)
 # Start by creating a template CSV
 get_started(data = read.csv("raw_data/licor_nee_for_HRD.csv"))
 
-data = read.csv("raw_data/licor_nee_for_HRD.csv")
-table_ID = "LI7500"
-description_table = read.csv("data_dic/description_table_fluxes.csv")
-
 # Open the template CSV and fill in manually
 # Save it in the data_dic folder and use the file name for the description_table argument
 
@@ -55,5 +51,5 @@ data_dic_FLIR <- make_data_dictionary(data = FLIRflat,
                                        table_ID = "FLIR",
                                        keep_table_ID = FALSE)
 
-write.csv(data_dic_tomst, "data_dic/dataDic_FLIR.csv")
+write.csv(data_dic_FLIR, "data_dic/dataDic_FLIR.csv")
 
