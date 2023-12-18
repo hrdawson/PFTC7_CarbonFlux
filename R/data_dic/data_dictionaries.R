@@ -15,7 +15,6 @@ data = read.csv("raw_data/licor_nee_for_HRD.csv")
 table_ID = "LI7500"
 description_table = read.csv("data_dic/description_table_fluxes.csv")
 
-
 # Open the template CSV and fill in manually
 # Save it in the data_dic folder and use the file name for the description_table argument
 
@@ -24,3 +23,18 @@ data_dic_fluxes <- make_data_dictionary(data = read.csv("raw_data/licor_nee_for_
                                  description_table = read.csv("data_dic/description_table_fluxes.csv"),
                                  table_ID = "LI7500",
                                  keep_table_ID = FALSE)
+write.csv(data_dic_fluxes, "data_dic/dataDic_LI7500.csv")
+# Tomst data dic ----
+# Start by creating a template CSV
+get_started(data = read.csv("clean_data/PFTC7_Tomst_Data.csv"))
+
+# Open the template CSV and fill in manually
+# Save it in the data_dic folder and use the file name for the description_table argument
+
+# Make sure to save it as something other than its default name
+data_dic_tomst <- make_data_dictionary(data = read.csv("clean_data/PFTC7_Tomst_Data.csv"),
+                                        description_table = read.csv("data_dic/description_table_tomst.csv"),
+                                        table_ID = "tomst",
+                                        keep_table_ID = FALSE)
+
+write.csv(data_dic_tomst, "data_dic/dataDic_tomst.csv")
