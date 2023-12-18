@@ -11,11 +11,6 @@ library(tidyverse)
 # Start by creating a template CSV
 get_started(data = read.csv("raw_data/licor_nee_for_HRD.csv"))
 
-data = read.csv("raw_data/licor_nee_for_HRD.csv")
-table_ID = "LI7500"
-description_table = read.csv("data_dic/description_table_fluxes.csv")
-
-
 # Open the template CSV and fill in manually
 # Save it in the data_dic folder and use the file name for the description_table argument
 
@@ -24,3 +19,37 @@ data_dic_fluxes <- make_data_dictionary(data = read.csv("raw_data/licor_nee_for_
                                  description_table = read.csv("data_dic/description_table_fluxes.csv"),
                                  table_ID = "LI7500",
                                  keep_table_ID = FALSE)
+write.csv(data_dic_fluxes, "data_dic/dataDic_LI7500.csv")
+# Tomst data dic ----
+# Start by creating a template CSV
+get_started(data = read.csv("clean_data/PFTC7_Tomst_Data.csv"))
+
+# Open the template CSV and fill in manually
+# Save it in the data_dic folder and use the file name for the description_table argument
+
+# Make sure to save it as something other than its default name
+data_dic_tomst <- make_data_dictionary(data = read.csv("clean_data/PFTC7_Tomst_Data.csv"),
+                                        description_table = read.csv("data_dic/description_table_tomst.csv"),
+                                        table_ID = "tomst",
+                                        keep_table_ID = FALSE)
+
+write.csv(data_dic_tomst, "data_dic/dataDic_tomst.csv")
+
+# Handheld FLIR data dic ----
+# Start by creating a template CSV
+get_started(data = FLIRflat)
+
+# Open the template CSV and fill in manually
+# Save it in the data_dic folder and use the file name for the description_table argument
+
+# Note that this isn't the raw FLIR data as uploaded to OSF.
+#  We need to re-upload a clean dataset once we have decent internet.
+
+# Make sure to save it as something other than its default name
+data_dic_FLIR <- make_data_dictionary(data = FLIRflat,
+                                       description_table = read.csv("data_dic/description_table_FLIR.csv"),
+                                       table_ID = "FLIR",
+                                       keep_table_ID = FALSE)
+
+write.csv(data_dic_FLIR, "data_dic/dataDic_FLIR.csv")
+

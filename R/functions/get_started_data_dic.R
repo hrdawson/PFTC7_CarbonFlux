@@ -23,7 +23,7 @@ get_started <- function(path = "data_dic", data){
 
   # make template for description table
   description_table <- as_tibble(colnames(data)) |>
-    rename(Variable_name = value) |>
+    rename(Variable.name = value) |>
     mutate(TableID = character(length = length(colnames(data))),
            Description = character(length = length(colnames(data))),
            Units = character(length = length(colnames(data))),
