@@ -38,3 +38,22 @@ data_dic_tomst <- make_data_dictionary(data = read.csv("clean_data/PFTC7_Tomst_D
                                         keep_table_ID = FALSE)
 
 write.csv(data_dic_tomst, "data_dic/dataDic_tomst.csv")
+
+# Handheld FLIR data dic ----
+# Start by creating a template CSV
+get_started(data = FLIRflat)
+
+# Open the template CSV and fill in manually
+# Save it in the data_dic folder and use the file name for the description_table argument
+
+# Note that this isn't the raw FLIR data as uploaded to OSF.
+#  We need to re-upload a clean dataset once we have decent internet.
+
+# Make sure to save it as something other than its default name
+data_dic_FLIR <- make_data_dictionary(data = FLIRflat,
+                                       description_table = read.csv("data_dic/description_table_FLIR.csv"),
+                                       table_ID = "FLIR",
+                                       keep_table_ID = FALSE)
+
+write.csv(data_dic_tomst, "data_dic/dataDic_FLIR.csv")
+
