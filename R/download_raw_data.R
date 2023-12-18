@@ -2,6 +2,7 @@
 # Use RStudio's handy script menu to jump to the data you need
 # You should only need to download data once, unless you know they have been updated
 # If you've been away from the project for awhile, you should download them again
+library(dataDownloader)
 
 # Tent flux (LI7500) data ----
 ## Site 1 LI7500 data ----
@@ -268,4 +269,4 @@ get_file(
   # Where do you want the file to go to?
   path = "raw_data/microclimate",
   # Where is the file stored within the OSF repository?
-  remote_path = "raw_data/raw_microclimate_data/")
+  remote_path = "raw_data/raw_microclimate_data/Tomst_data")
