@@ -1,10 +1,6 @@
 # Make clean FLIR data file for OSF
 
 # Flatten Rds to data frame ----
-FLIRraw = get(load("raw_data/flir_raw_2023-12-17.Rdata"))
-
-FLIRrawdata = FLIRraw[["raw_dat"]]
-
 FLIRraw = readRDS("raw_data/microclimate/FLIR_cropped.Rds") |>
   lapply(FUN = as.numeric)
 
@@ -29,4 +25,12 @@ FLIRflat = flir_long |>
   # Rename temp col
   rename(temp_C = value)
 
-write.csv(FLIRflat, "clean_data/flir_values.csv")
+# write.csv(FLIRflat, "clean_data/flir_values.csv")
+
+# make trial plot with basic FLIR
+ggplot(FLIRflat |> filter(temp_C > 0) |> drop_na(siteID),
+       aes(x = temp_C, y = as.factor(siteID), fill = aspect)) +
+  geom_density_ridges(alpha = 0.5) +
+  theme_ridges() +
+  facet_grid(~day.night, scales = "free_x") +
+  theme(legend.position = "none")
