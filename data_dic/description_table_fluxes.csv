@@ -1,0 +1,16 @@
+Variable.name,TableID,Description,Units,How measured
+filename,LI7500,File name of original file,NA,defined
+tstart,LI7500,Time start (trimmed from raw flux),seconds,defined
+tfinish,LI7500,Time end (trimmed from raw flux),seconds,defined
+camb,LI7500,"Ambient carbon, measured from ambient curve or from first five observations of flux curve",,measured
+tav,LI7500,"Average ambient temperature, calculated from associated ambient curve",degrees C,calculated
+pav,LI7500,"Average ambient pressure, calculated from raw flux data",,calculated
+nee_lm,LI7500,"Net ecosystem exchange, linear model fit",,
+nee_exp,LI7500,"Net ecosystem exchange, non-linear model fit",,
+lm_rsqd,LI7500,R-squared value of the linear model fit,,
+non_linear_sigma,LI7500,Sigma value of the non-linear model fit,,
+aic_lm,LI7500,AIC score of the linear model fit,,
+aic_nlm,LI7500,AIC score of the non-linear model fit,,
+c_prime_min,LI7500,"Minimum value of CO2 flux, adjusted",,
+c_prime_max,LI7500,"Maximum value of CO2 flux, adjusted",,
+flagged,LI7500,Quality flag,NA,defined
