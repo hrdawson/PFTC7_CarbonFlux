@@ -26,9 +26,10 @@ library(ggbeeswarm)
 ## WUE = T / GPP 
 
 # load functions
-source("./read_SR.R")
-source("./calc_SR.R")
-source("./flux_calc_own.R")
+source("./R/functions/read_SR.R")
+source("./R/functions//calc_SR.R")
+source("./R/functions//flux_calc_own.R")
+source("./R/functions//fix_file_names.R")
 
 #packages
 library(co2fluxtent)
@@ -38,12 +39,11 @@ library(data.table)
 
 ## TENT CO2 --------------
 # Look for flux files in a folder
-licor_files <- Map(c, co2fluxtent::read_files("raw_data/Site 1/"),
-                   
-                   co2fluxtent::read_files("raw_data/Site 2/"),
-                   co2fluxtent::read_files("raw_data/Site 3/"),
-                   co2fluxtent::read_files("raw_data/Site 4/"),
-                   co2fluxtent::read_files("raw_data/Site 5/"))
+licor_files <- Map(c, co2fluxtent::read_files("raw_data_2/Site 1/"),
+                   co2fluxtent::read_files("raw_data_2/Site 2/"),
+                   co2fluxtent::read_files("raw_data_2/Site 3/"),
+                   co2fluxtent::read_files("raw_data_2/Site 4/"),
+                   co2fluxtent::read_files("raw_data_2/Site 5/"))
 
 # Check if the files are ok
 licor_files <- test_flux_files(licor_files, skip = 3, min_rows = 50)
@@ -271,7 +271,7 @@ str(dt.res)
 #Shannon Diversity#####
 
 #Read the CSV file
-veg_cover_data <- read.csv("raw_data/veg_cover.csv")
+veg_cover_data <- read.csv("raw_data_2/veg_cover.csv")
 
 # Convert 'Cover' column to numeric
 veg_cover_data$Cover <- as.numeric(veg_cover_data$Cover)
@@ -308,7 +308,7 @@ print(richness_results)
 
 diversity_results <- merge(diversity_results, richness_results, by = "plotID", all.x = TRUE)
 # Print the merged dataframe
-print(data_full)
+print(diversity_results)
 
 
 # Extract site information from plotID
@@ -318,7 +318,7 @@ diversity_results$Slope <- gsub("s_.*_(E|W)_.*", "\\1", diversity_results$plotID
 
 # Plotting
 # Plotting with letters indicating different confidence levels
-ggplot(diversity_results, aes(x = factor(Site), y = Shannon_Index, fill = factor(Site))) +
+ShannonDiversity_Plot<- ggplot(diversity_results, aes(x = factor(Site), y = Shannon_Index, fill = factor(Site))) +
   stat_summary(fun = mean, geom = "bar", position = "dodge", color = "black") +
   stat_summary(
     fun.data = mean_se,
@@ -334,6 +334,26 @@ ggplot(diversity_results, aes(x = factor(Site), y = Shannon_Index, fill = factor
   stat_compare_means(comparisons = list(c("s_1", "s_2"), c("s_2", "s_3"), c("s_3", "s_4"), c("s_4", "s_5")),
                      method = "t.test", label = "p.signif")
 
+ggsave("ShannonBars.png", plot = ShannonDiversity_Plot, width = 10, height = 8, dpi = 600)
+
+#Plot the same but with the species diversity
+SpeciesRichness_Plot<- ggplot(diversity_results, aes(x = factor(Site), y = Species_Richness, fill = factor(Site))) +
+  stat_summary(fun = mean, geom = "bar", position = "dodge", color = "black") +
+  stat_summary(
+    fun.data = mean_se,
+    geom = "errorbar",
+    position = position_dodge(0.9),
+    color = "black",
+    width = 0.2
+  ) +
+  facet_wrap(~Slope) +
+  labs(title = "Mean Species Richness by Site and Slope",
+       x = "Site", y = "Mean Species Richness") +
+  theme_minimal() +
+  stat_compare_means(comparisons = list(c("s_1", "s_2"), c("s_2", "s_3"), c("s_3", "s_4"), c("s_4", "s_5")),
+                     method = "t.test", label = "p.signif")
+
+ggsave("RichnessBars.png", plot = SpeciesRichness_Plot, width = 10, height = 8, dpi = 600)
 
 #Now I need to relate this information with the licor nee data from the dt.res df.
 
@@ -408,4 +428,47 @@ plot_NPP <- ggplot(data_full, aes(x = Shannon_Index, y = NPP, color = site, shap
 # Arrange the plots in a 1x3 grid using mfrow
 #install.packages("gridExtra")
 library(gridExtra)
-grid.arrange(plot_GPP, plot_NEE, plot_NPP, nrow=3)
+ShannonPlot <- grid.arrange(plot_GPP, plot_NEE, plot_NPP, nrow=3)
+
+# Save the plot with specified width, height, and resolution
+ggsave("Shannon.png", plot = ShannonPlot, width = 10, height = 8, dpi = 600)
+
+#Now for species diversity
+
+# CNEE
+plot_NEE2 <- ggplot(data_full, aes(x = Species_Richness, y = NEE, color = site, shape = aspect, linetype = aspect)) +
+  geom_point(size = 3) +
+  geom_smooth(method = "loess", se = TRUE, color = "black") +
+  theme(text = element_text(size= 40)) +
+  scale_color_viridis_c() +
+  labs(title = "NEE vs Species_Richness",
+       x = "Species_Richness",
+       y = "NEE") +
+  theme_minimal()
+
+#Now GPP vs Shannon
+plot_GPP2 <- ggplot(data_full, aes(x = Species_Richness, y = GPP, color = site, shape = aspect, linetype = aspect)) +
+  geom_point(size = 3) +
+  geom_smooth(method = "loess", se = TRUE, color = "black") +
+  scale_color_viridis_c() +
+  labs(title = "GPP vs Species_Richness",
+       x = "Species_Richness",
+       y = "GPP") +
+  theme_minimal()
+
+#Now NPPvs Shannon
+plot_NPP2 <- ggplot(data_full, aes(x = Species_Richness, y = NPP, color = site, shape = aspect, linetype = aspect)) +
+  geom_point(size = 3) +
+  geom_smooth(method = "loess", se = TRUE, color = "black") +
+  scale_color_viridis_c() +
+  labs(title = "NPP vs Species_Richness",
+       x = "Species_Richness",
+       y = "NPP") +
+  theme_minimal()
+
+# Arrange the plots in a 1x3 grid using mfrow
+#install.packages("gridExtra")
+library(gridExtra)
+RichnessPlot <- grid.arrange(plot_GPP2, plot_NEE2, plot_NPP2, nrow=3)
+
+ggsave("Richness.png", plot = RichnessPlot, width = 10, height = 8, dpi = 600)

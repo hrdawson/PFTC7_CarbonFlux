@@ -301,11 +301,11 @@ batch_crop <- function(temp_dat, out_dir, row_start, row_end, col_start, col_end
     }
     temp_cropped[[i]] <- temp_cropped_i
   }  
-  return(temp_cropped)
   
   # save cropped temp data
-  out_path <- file.path(out_dir, "FLIR_cropped.Rds")
-  saveRDS(temp_cropped,file = out_path)
+  saveRDS(temp_cropped, paste0(out_dir, "FLIR_cropped.Rds"))
+  
+  return(temp_cropped)
 }
 
 calc_stats_flir <- function(temp_dat){
