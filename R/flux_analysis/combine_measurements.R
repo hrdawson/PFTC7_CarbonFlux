@@ -102,7 +102,7 @@ dt.nee <- licor_nee |>
   as.data.table()
 
 #exclude extremely badly fitting models
-#dt.nee <- dt.nee[lm_rsqd > 0.75, ]
+dt.nee <- dt.nee[lm_rsqd > 0.75, ]
 names(dt.nee)
 
 dt.nee[, nee_best := ifelse(aic_lm < aic_nlm, nee_lm, nee_exp)]
@@ -126,7 +126,7 @@ dt.carb[, GPP := nee_best - resp_best,]
 dt.carb[, NEE := nee_best,]
 dt.carb[, ER := resp_best,]
 
-
+# fwrite(dt.carb, "outputs/2023.12.19_Cflux_originalCalc.csv")
 
 # WATER FLUXES -----
 #inspect measurements and calculate fluxes (actually, the function does the calculation for you)
@@ -139,6 +139,8 @@ licor_et <- licor_files %>%
                 tfinish = 80,
                 signal_threshold = 95) %>%
   mutate(filename = basename(filename))
+
+# fwrite(licor_et, "outputs/2023_12_19_licor_et_for_HRD.csv")
 
 #modify the data frame
 dt.et <- licor_et |>
@@ -183,8 +185,6 @@ dt.et <- dt.et  %>%
 dt.tarp <- dt.et[flux == "ER" & day.night == "day" , .(et_best, day.night, plot, elevation, aspect, redo, file)]
 dt.light <- dt.et[flux == "NEE" & day.night == "day", .(et_best, day.night, plot, elevation, aspect, redo, file)]
 
-
-
 setnames(dt.tarp, c("et_best", "file", "redo"), c("eva_best", "eva_file", "eva_redo"))
 setnames(dt.light, c("file", "redo"), c("nee_file", "nee_redo"))
 
@@ -195,6 +195,7 @@ dt.water[, TRANS := et_best - eva_best,]
 dt.water[, ET := et_best,]
 dt.water[, EVAP := eva_best]
 
+# fwrite(dt.water, "outputs/2023.12.19_H2Oflux_originalCalc.csv")
 
 ## SOIL RESPIRATION ----------------------
 
