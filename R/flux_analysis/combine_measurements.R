@@ -1,11 +1,11 @@
 
-## calculating NEE, ER, GPP, NPP, C use efficiency , Water use efficiency, 
+## calculating NEE, ER, GPP, NPP, C use efficiency , Water use efficiency,
 ## GPP = NEE - ER
 ## NPP = GPP - (ER-SR)
 ## CUE = GPP/NPP
-## ET 
+## ET
 ## T = H20 light - H20 dark (tarp)
-## WUE = T / GPP 
+## WUE = T / GPP
 
 # load functions
 source("R/functions/read_SR.R")
@@ -27,11 +27,11 @@ fix_file_names(path = "raw_data/LI7500/")
 
 list.files("raw_data/LI7500/", recursive = TRUE)
 # Look for flux files in a folder
-licor_files <- Map(c, co2fluxtent::read_files("raw_data/LI7500/Site 1/LI7500_Site 1/"), 
-                   co2fluxtent::read_files("raw_data/LI7500/Site 2/LI7500_Site 2/"),
-                   co2fluxtent::read_files("raw_data/LI7500/Site 3/LI7500_Site 3/"),
-                   co2fluxtent::read_files("raw_data/LI7500/Site 4/LI7500_Site 4/"),
-                   co2fluxtent::read_files("raw_data/LI7500/Site 5/LI7500_Site 5/"))
+licor_files <- Map(c, co2fluxtent::read_files("raw_data/LI7500/LI7500_Site 1/"),
+                   co2fluxtent::read_files("raw_data/LI7500/LI7500_Site 2/"),
+                   co2fluxtent::read_files("raw_data/LI7500/LI7500_Site 3/"),
+                   co2fluxtent::read_files("raw_data/LI7500/LI7500_Site 4/"),
+                   co2fluxtent::read_files("raw_data/LI7500/LI7500_Site 5/"))
 
 
 ## clean file names
@@ -45,7 +45,7 @@ print(licor_files)
 # Gather site, plot etc. information from the filenames
 
 meta <- tibble(file_path = unlist(licor_files),
-               file = basename(file_path)) %>% 
+               file = basename(file_path)) %>%
   mutate(site = unlist(lapply(file, function(x) str_split(x, "_")[[1]][1])),
          elevation = unlist(lapply(file, function(x) str_split(x, "_")[[1]][2])),
          aspect = unlist(lapply(file, function(x) str_split(x, "_")[[1]][3])),
@@ -57,18 +57,18 @@ meta <- tibble(file_path = unlist(licor_files),
 meta
 
 
-#look at measurements and calculate fluxes 
-licor_nee <- licor_files %>% 
-  flux_calc_own(param = "nee", 
+#look at measurements and calculate fluxes
+licor_nee <- licor_files %>%
+  flux_calc_own(param = "nee",
                 skip = 3,
                 vol = 1.2^3,
-                area = 1.2^2, 
-                tstart = 20, 
+                area = 1.2^2,
+                tstart = 20,
                 tfinish = 80,
-                signal_threshold = 95) %>%  
-  mutate(filename = basename(filename)) 
+                signal_threshold = 95) %>%
+  mutate(filename = basename(filename))
 
-#fwrite(licor_nee, "outputs/licor_nee_for_HRD.csv")
+# fwrite(licor_nee, "outputs/2023_12_19_licor_nee_for_HRD.csv")
 
 #modify and restructure the data
 dt.nee <- licor_nee |>
@@ -96,9 +96,9 @@ dt.nee <- licor_nee |>
   ) |>
   # Create uniqueID
   mutate(uniqueID = paste0(siteID, " ", aspect, " ", plotID, " ", day.night, ' ', flux)) |>
-  arrange(redo) |> 
-  group_by(uniqueID) %>% 
-  slice_tail(n = 1) |> 
+  arrange(redo) |>
+  group_by(uniqueID) %>%
+  slice_tail(n = 1) |>
   as.data.table()
 
 #exclude extremely badly fitting models
@@ -107,10 +107,10 @@ names(dt.nee)
 
 dt.nee[, nee_best := ifelse(aic_lm < aic_nlm, nee_lm, nee_exp)]
 
-#exclude outliers 
+#exclude outliers
 dt.nee <- dt.nee[!abs(nee_best) > 20, ]
 
-#split up in resp and photo and join again later to calculate GPP 
+#split up in resp and photo and join again later to calculate GPP
 dt.resp <- dt.nee[flux == "ER" & day_night == "day" , .(nee_best, day_night, plot, elevation, aspect, redo, file)]
 dt.photo <- dt.nee[flux == "NEE" & day_night == "day", .(nee_best, day_night, plot, elevation, aspect, redo, file, tav)]
 
@@ -130,15 +130,15 @@ dt.carb[, ER := resp_best,]
 
 # WATER FLUXES -----
 #inspect measurements and calculate fluxes (actually, the function does the calculation for you)
-licor_et <- licor_files %>% 
-  flux_calc_own(param = "et", 
+licor_et <- licor_files %>%
+  flux_calc_own(param = "et",
                 skip = 3,
                 vol = 1.2^3,
-                area = 1.2^2, 
-                tstart = 20, 
+                area = 1.2^2,
+                tstart = 20,
                 tfinish = 80,
-                signal_threshold = 95) %>%  
-  mutate(filename = basename(filename)) 
+                signal_threshold = 95) %>%
+  mutate(filename = basename(filename))
 
 #modify the data frame
 dt.et <- licor_et |>
@@ -166,20 +166,20 @@ dt.et <- licor_et |>
   ) |>
   # Create uniqueID
   mutate(uniqueID = paste0(siteID, " ", aspect, " ", plotID, " ", day.night, ' ', flux)) |>
-  arrange(redo) |> 
-  group_by(uniqueID) %>% 
-  slice_tail(n = 1) |> 
+  arrange(redo) |>
+  group_by(uniqueID) %>%
+  slice_tail(n = 1) |>
   as.data.table()
 
-#select best model 
-dt.et <- dt.et  %>% 
+#select best model
+dt.et <- dt.et  %>%
   mutate(
-    et_best = ifelse(aic_lm < aic_nlm, flux_lm, flux_nlm)) %>% 
-  # filter(lm_rsqd > 0.75) %>% 
+    et_best = ifelse(aic_lm < aic_nlm, flux_lm, flux_nlm)) %>%
+  # filter(lm_rsqd > 0.75) %>%
       as.data.table()
 
 
-#split up in resp and photo and join again later to calculate GPP 
+#split up in resp and photo and join again later to calculate GPP
 dt.tarp <- dt.et[flux == "ER" & day.night == "day" , .(et_best, day.night, plot, elevation, aspect, redo, file)]
 dt.light <- dt.et[flux == "NEE" & day.night == "day", .(et_best, day.night, plot, elevation, aspect, redo, file)]
 
@@ -219,13 +219,13 @@ dt.sr <- as.data.table(dt.sr)
 dt.sr <- dt.sr[!co2_flux_sr < 0]
 
 ## COMBINE ----------------
-# combine the relevant information from the different sources 
+# combine the relevant information from the different sources
 dt.carb[, plotID := paste0("Plot_", plot)]
-dt.carb[, temperature := tav] 
-dt.carb.sub <- dt.carb[,.(plotID, elevation, aspect, GPP, NEE, ER, temperature)] 
+dt.carb[, temperature := tav]
+dt.carb.sub <- dt.carb[,.(plotID, elevation, aspect, GPP, NEE, ER, temperature)]
 summary(dt.carb.sub) # NA's in ER and thus in GPP
 dt.water[, plotID := paste0("Plot_", plot)]
-dt.water.sub <- dt.water[,.(plotID, elevation, aspect, TRANS, ET, EVAP)] 
+dt.water.sub <- dt.water[,.(plotID, elevation, aspect, TRANS, ET, EVAP)]
 summary(dt.water.sub) #all good, all there
 dt.sr.sub <- dt.sr[,.(plotID, elevation, aspect, co2_flux_sr, h2o_flux_sr, transectID)]
 summary(dt.sr.sub) #all good, all there
@@ -239,7 +239,7 @@ dt.com <- left_join(dt.com, dt.sr.sub, by = c("plotID", "aspect", "elevation"))
 
 ## NPP = GPP - (ER-SR)
 ## CUE = GPP/NPP
-## WUE = T / GPP 
+## WUE = T / GPP
 
 #careful here, there is some flipping going on to make everything that got uptaken negative and everything that gets into the atmosphere positive.
 # gives e.g., a negative NPP and GPP which is weird but somewhat right
@@ -250,7 +250,7 @@ dt.res <- dt.com %>% mutate(
   TRANS = TRANS,
   ET = ET,
   EVAP = EVAP,
-  NPP = GPP - (ER - co2_flux_sr), 
+  NPP = GPP - (ER - co2_flux_sr),
   CUE = NPP/GPP,
   WUE = NPP / TRANS,
   elevation = as.numeric(elevation)
@@ -267,13 +267,13 @@ dt.res[, `:=` (NPP_mean = mean(NPP, na.rm = TRUE),
                 CUE_mean = mean(CUE, na.rm = TRUE),
                ER_mean = mean(ER, na.rm = TRUE),
                NEE_mean = mean(NEE, na.rm = TRUE),
-               SR_mean = mean(co2_flux_sr, na.rm = TRUE), 
+               SR_mean = mean(co2_flux_sr, na.rm = TRUE),
                TRANS_mean = mean(TRANS, na.rm = TRUE),
                ET_mean = mean(ET, na.rm = TRUE),
                WUE_mean = mean(WUE, na.rm = TRUE)
                ), by = transectID]
 
-summary(dt.res) #interestingly, we seem do drop one GPP value here. 
+summary(dt.res) #interestingly, we seem do drop one GPP value here.
 
 fwrite(dt.res, "outputs/prelim_flux_results.csv")
 ## PLOT --------------------
@@ -283,7 +283,7 @@ scale_color_met_d(name = "Cassatt2")
 
 #Carbon plots ---------
 
-a <- ggplot(data = dt.res) + 
+a <- ggplot(data = dt.res) +
   geom_hline(yintercept = 0, linetype = "dashed", linewidth = 1.1, color = "grey50", linetype = "dashed", linewidth = 1.1, color = "grey50") +
   geom_boxplot(aes(x = as.factor(elevation), y = GPP, fill = aspect, color = aspect), linewidth = 1.2, alpha = 0.7) +
   scale_color_met_d(name = "Cassatt2", direction = - 1) +
@@ -296,7 +296,7 @@ a <- ggplot(data = dt.res) +
 a
 
 
-b <- ggplot(data = dt.res) + 
+b <- ggplot(data = dt.res) +
   geom_hline(yintercept = 0, linetype = "dashed", linewidth = 1.1, color = "grey50") +
   geom_boxplot(aes(x = as.factor(elevation), y = NPP, fill = aspect, color = aspect), linewidth = 1.2, alpha = 0.7) +
   scale_color_met_d(name = "Cassatt2", direction = -1) +
@@ -308,7 +308,7 @@ b <- ggplot(data = dt.res) +
 
 b
 
-c <- ggplot(data = dt.res[!abs(CUE) > 1]) + 
+c <- ggplot(data = dt.res[!abs(CUE) > 1]) +
   geom_hline(yintercept = 0, linetype = "dashed", linewidth = 1.1, color = "grey50") +
   geom_boxplot(aes(x = as.factor(elevation), y = CUE, fill = aspect, color = aspect), linewidth = 1.2, alpha = 0.7) +
   scale_color_met_d(name = "Cassatt2", direction = -1) +
@@ -319,19 +319,19 @@ c <- ggplot(data = dt.res[!abs(CUE) > 1]) +
 
 c
 
-d <- ggplot(data = dt.res) + 
+d <- ggplot(data = dt.res) +
   geom_hline(yintercept = 0, linetype = "dashed", linewidth = 1.1, color = "grey50") +
   geom_boxplot(aes(x = as.factor(elevation), y = ER, fill = aspect, color = aspect), linewidth = 1.2, alpha = 0.7) +
   scale_color_met_d(name = "Cassatt2", direction = -1) +
   scale_fill_met_d(name = "Cassatt2", direction = -1) +
   labs(y = "CO2 (µmol/m2/s)", title = "Ecosystem respiration (ER)", x = "Elevation") +
   theme_minimal() +
-  theme(plot.title = element_text(hjust = 0.5), 
+  theme(plot.title = element_text(hjust = 0.5),
         legend.position = "none")
 
 d
 
-e <- ggplot(data = dt.res) + 
+e <- ggplot(data = dt.res) +
   geom_hline(yintercept = 0, linetype = "dashed", linewidth = 1.1, color = "grey50") +
   geom_boxplot(aes(x = as.factor(elevation), y = NEE, fill = aspect, color = aspect), linewidth = 1.2, alpha = 0.7) +
   scale_color_met_d(name = "Cassatt2", direction = -1) +
@@ -342,7 +342,7 @@ e <- ggplot(data = dt.res) +
         legend.position = "none")
 
 e
-f <- ggplot(data = dt.res) + 
+f <- ggplot(data = dt.res) +
   geom_hline(yintercept = 0, linetype = "dashed", linewidth = 1.1, color = "grey50") +
   geom_boxplot(aes(x = as.factor(elevation), y = co2_flux_sr, fill = aspect, color = aspect), linewidth = 1.2, alpha = 0.7) +
   scale_color_met_d(name = "Cassatt2", direction = -1) +
@@ -357,7 +357,7 @@ library(gridExtra)
 p.co2 <- grid.arrange(a, b, c, d, e, f, ncol = 3, widths = c(1,1,1.3))
 ggsave(plot = p.co2,"outputs/plots/prelim_c_stuff.png", dpi = 600, height = 6, width = 10)
 
-## correlation matrix Carbon 
+## correlation matrix Carbon
 library(ggcorrplot)
 summary(dt.res)
 c.cor <- round(cor(dt.res[!is.na(dt.res$CUE),.(CUE, NPP, NEE, GPP, ER, co2_flux_sr)]), 1)
@@ -369,7 +369,7 @@ ggcorrplot(c.cor, hc.order = TRUE, type = "lower",
 
 
 #Water plots -------
-ggplot(data = dt.res) + 
+ggplot(data = dt.res) +
   geom_line(aes(x = elevation, y = TRANS_mean, color = "TRANS"), linewidth = 1.2) +
   geom_line(aes(x = elevation, y = ET_mean, color = "ET"), linewidth = 1.2) +
   geom_line(aes(x = elevation, y = WUE_mean, color = "WUE"), linewidth = 1.2) +
@@ -377,7 +377,7 @@ ggplot(data = dt.res) +
   labs(y = "mmol/m2/s", title = "H2O") +
   theme_minimal()
 
-wa <- ggplot(data = dt.res) + 
+wa <- ggplot(data = dt.res) +
   geom_hline(yintercept = 0, linetype = "dashed", linewidth = 1.1, color = "grey50") +
   geom_boxplot(aes(x = as.factor(elevation), y = ET*-1, fill = aspect, color = aspect), linewidth = 1.2, alpha = 0.7) +
   scale_color_met_d(name = "Cassatt2", direction = -1) +
@@ -389,7 +389,7 @@ wa <- ggplot(data = dt.res) +
 
 wa
 
-wb <- ggplot(data = dt.res) + 
+wb <- ggplot(data = dt.res) +
   geom_hline(yintercept = 0, linetype = "dashed", linewidth = 1.1, color = "grey50") +
   geom_boxplot(aes(x = as.factor(elevation), y = TRANS*-1, fill = aspect, color = aspect), linewidth = 1.2, alpha = 0.7) +
   scale_color_met_d(name = "Cassatt2", direction = -1) +
@@ -401,7 +401,7 @@ wb <- ggplot(data = dt.res) +
 
 wb
 
-wc <- ggplot(data = dt.res) + 
+wc <- ggplot(data = dt.res) +
   geom_hline(yintercept = 0, linetype = "dashed", linewidth = 1.1, color = "grey50") +
   geom_boxplot(aes(x = as.factor(elevation), y = WUE, fill = aspect, color = aspect), linewidth = 1.2, alpha = 0.7) +
   scale_color_met_d(name = "Cassatt2", direction = -1) +
@@ -412,7 +412,7 @@ wc <- ggplot(data = dt.res) +
 
 wc
 
-wd <- ggplot(data = dt.res) + 
+wd <- ggplot(data = dt.res) +
   geom_hline(yintercept = 0, linetype = "dashed", linewidth = 1.1, color = "grey50") +
   geom_boxplot(aes(x = as.factor(elevation), y = EVAP*-1, fill = aspect, color = aspect), linewidth = 1.2, alpha = 0.7) +
   scale_color_met_d(name = "Cassatt2", direction = -1) +
@@ -427,7 +427,7 @@ wd
 p.h2o <- grid.arrange(wa, wb, wc, wd, ncol = 3, widths = c(1, 1, 1.3))
 ggsave(plot = p.h2o,"outputs/plots/prelim_water_stuff.png", dpi = 600, width = 10, height = 6)
 
-## correlation matrix Carbon 
+## correlation matrix Carbon
 library(ggcorrplot)
 summary(dt.res)
 w.cor <- round(cor(dt.res[!is.na(dt.res$WUE),.(WUE, TRANS, h2o_flux_sr)]), 1)
