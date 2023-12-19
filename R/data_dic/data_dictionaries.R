@@ -25,8 +25,6 @@ write.csv(data_dic_fluxes, "data_dic/dataDic_LI7500.csv")
 # Start by creating a template CSV
 get_started(data = read.csv("clean_data/LI8100_combined.csv"))
 
-LI8100 = read.csv("clean_data/LI8100_combined.csv")
-
 # Open the template CSV and fill in manually
 # Save it in the data_dic folder and use the file name for the description_table argument
 
