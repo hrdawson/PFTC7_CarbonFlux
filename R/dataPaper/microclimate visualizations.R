@@ -28,6 +28,7 @@ microclimate <- FLIRflat |>
            siteID == 1 ~ 2000
          ), levels = c("3000", "2800", "2600", "2400", "2200", "2000")))
 
+# Visualize
 
 library(ggh4x)
 
