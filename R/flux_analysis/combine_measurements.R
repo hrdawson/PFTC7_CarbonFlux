@@ -219,6 +219,8 @@ dt.sr <- calcSR(data = SR)
 dt.sr <- as.data.table(dt.sr)
 dt.sr <- dt.sr[!co2_flux_sr < 0]
 
+# fwrite(dt.sr, "outputs/2023.12.19_SR_originalCalc.csv")
+
 ## COMBINE ----------------
 # combine the relevant information from the different sources
 dt.carb[, plotID := paste0("Plot_", plot)]
