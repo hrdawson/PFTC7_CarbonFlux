@@ -7,9 +7,11 @@ source("R/functions/moist_calibration.R")
 # Read in data from "R/download_raw_data.R"
 
 # Set time limits for the data read in
-mind <- as.Date("2023-12-06", tz = "Etc/GMT-2")
-maxd <- as.Date(Sys.Date(), tz = "Etc/GMT-2")
+mind <- as.Date("2023-12-07", tz = "Etc/GMT-2")
+maxd <- as.Date("2023-12-16", tz = "Etc/GMT-2")
 # THESE STARTING/FINISHING TIMES MAY NEED TRIMMING TO MATCH THE ACTUAL TIME ON FIELD
+
+
 
 # Read tomst and site metadata
 ids <- read.csv("raw_data/microclimate/Tomst logger IDs.csv") %>%
@@ -30,7 +32,7 @@ f <- dir(path = "raw_data/microclimate/Tomst_logger_raw", pattern = "^data_.*.cs
 # Read and combine Tomst data
 d <- read_tomst_data(f, tzone = "Etc/GMT-2") %>%
   distinct(tomst_id, datetime, .keep_all = T) %>% # Remove dublicates
-  arrange(tomst_id, datetime) %>%
+  arrange(tomst_id, datetime) |>
   filter(datetime >= mind, #filter with setted time
          datetime <= maxd)
 
