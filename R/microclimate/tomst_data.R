@@ -26,7 +26,7 @@ ids <- read.csv("raw_data/microclimate/Tomst logger IDs.csv") %>%
   ))
 
 # List Tomst data files in local folder
-f <- dir(path = "raw_data/microclimate/Tomst_logger_raw", pattern = "^data_.*.csv$",
+f <- dir(path = "raw_data/microclimate/PFTC7", pattern = "^data_.*.csv$",
          full.names = TRUE, recursive = TRUE)
 
 # Read and combine Tomst data
