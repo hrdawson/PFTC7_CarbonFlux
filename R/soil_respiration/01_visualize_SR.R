@@ -40,7 +40,7 @@ ggplot(data = SR[!SR$siteID == "Site_4", ], aes(x = Etime, y = CO2, color = plot
 SR = read.csv("raw_data/LI8100/LI8100_combined.csv")
 df.res <- calcSR(data = SR)
 
-write.csv(df.res, "clean_data/LI8100_fluxes.csv")
+# write.csv(df.res, "clean_data/LI8100_fluxes.csv")
 
 
 #Visualize fluxes
