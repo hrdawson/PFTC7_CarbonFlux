@@ -30,10 +30,10 @@ get_started(data = read.csv("clean_data/LI8100_combined.csv"))
 
 # Make sure to save it as something other than its default name
 data_dic_soilResp <- make_data_dictionary(data = read.csv("clean_data/LI8100_combined.csv"),
-                                        description_table = read.csv("data_dic/description_table_LI8100.csv"),
+                                        description_table = read.csv("data_dic/description_table_LI8100_rawReads.csv"),
                                         table_ID = "soilResp",
                                         keep_table_ID = FALSE)
-write.csv(data_dic_soilResp, "data_dic/dataDic_LI8100.csv")
+write.csv(data_dic_soilResp, "data_dic/dataDic_LI8100_rawReads.csv")
 
 # Tomst data dic ----
 # Start by creating a template CSV
