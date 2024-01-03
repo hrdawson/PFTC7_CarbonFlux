@@ -8,17 +8,40 @@ source("R/functions/get_started_data_dic.R")
 library(tidyverse)
 
 # Flux tent LI7500 data dic ----
+## For CO2 ----
 # Start by creating a template CSV
-get_started(data = read.csv("raw_data/licor_nee_for_HRD.csv"))
+get_started(data = read.csv("clean_data/LI7500_Cflux_originalCalc.csv"))
+
+# Open the template CSV and fill in manually
+# Save it in the data_dic folder and use the file name for the description_table argument
+
+# Make sure to save it as something other than its default name
+data_dic_fluxes <- make_data_dictionary(data = read.csv("clean_data/LI7500_Cflux_originalCalc.csv"),
+                                 description_table = read.csv("data_dic/description_table_fluxes.csv"),
+                                 table_ID = "LI7500",
+                                 keep_table_ID = FALSE)
+write.csv(data_dic_fluxes, "data_dic/dataDic_LI7500.csv")
+
+## For water ----
+# Start by creating a template CSV
+LI7500.h2o = read.csv("clean_data/LI7500_H2Oflux_originalCalc.csv")
+
+get_started(data = read.csv("clean_data/LI7500_H2Oflux_originalCalc.csv"))
+
+data_dic_fluxes_ET <- make_data_dictionary(data = read.csv("clean_data/LI7500_H2Oflux_originalCalc.csv"),
+                                        description_table = read.csv("data_dic/description_table_LI7500h2o.csv"),
+                                        table_ID = "LI7500_H2O",
+                                        keep_table_ID = FALSE)
+write.csv(data_dic_fluxes_ET, "data_dic/dataDic_LI7500_H2O.csv")
 
 # Open the template CSV and fill in manually
 # Save it in the data_dic folder and use the file name for the description_table argument
 
 # Make sure to save it as something other than its default name
 data_dic_fluxes <- make_data_dictionary(data = read.csv("raw_data/licor_nee_for_HRD.csv"),
-                                 description_table = read.csv("data_dic/description_table_fluxes.csv"),
-                                 table_ID = "LI7500",
-                                 keep_table_ID = FALSE)
+                                        description_table = read.csv("data_dic/description_table_fluxes.csv"),
+                                        table_ID = "LI7500",
+                                        keep_table_ID = FALSE)
 write.csv(data_dic_fluxes, "data_dic/dataDic_LI7500.csv")
 
 # Soil respiration 8100 data dic ----
