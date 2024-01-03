@@ -8,6 +8,27 @@ library(dataDownloader)
 
 # Fluxes ----
 ## Clean LI7500 data ----
+# WARNING: These data aren't actually clean
+# They're just the best that we have while Michael works on the new way of cleaning fluxes
+get_file(
+  # Which repository is it in?
+  node = "hk2cy",
+  # Which file do you want?
+  file = "LI7500_Cflux_originalCalc.csv",
+  # Where do you want the file to go to?
+  path = "clean_data",
+  # Where is the file stored within the OSF repository?
+  remote_path = "flux_data")
+
+get_file(
+  # Which repository is it in?
+  node = "hk2cy",
+  # Which file do you want?
+  file = "LI7500_H2Oflux_originalCalc.csv",
+  # Where do you want the file to go to?
+  path = "clean_data",
+  # Where is the file stored within the OSF repository?
+  remote_path = "flux_data")
 
 ## Clean LI8100 data ----
 get_file(
