@@ -35,6 +35,13 @@ data_dic_soilResp <- make_data_dictionary(data = read.csv("clean_data/LI8100_flu
                                         keep_table_ID = FALSE)
 write.csv(data_dic_soilResp, "data_dic/dataDic_LI8100.csv")
 
+## For raw SR data ----
+
+data_dic_soilResp <- make_data_dictionary(data = read.csv("clean_data/LI8100_combined.csv"),
+                                          description_table = read.csv("data_dic/description_table_LI8100_rawReads.csv"),
+                                          table_ID = "soilResp",
+                                          keep_table_ID = FALSE)
+write.csv(data_dic_soilResp, "data_dic/dataDic_LI8100_rawReads.csv")
 # Tomst data dic ----
 # Start by creating a template CSV
 get_started(data = read.csv("clean_data/PFTC7_Tomst_Data.csv"))

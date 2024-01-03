@@ -19,11 +19,12 @@ get_file(
   remote_path = "climate_data")
 
 # Clean LI8100 data ----
+
 get_file(
   # Which repository is it in?
   node = "hk2cy",
   # Which file do you want?
-  file = "LI8100_fluxes.csv",
+  file = "LI8100_combined.csv",
   # Where do you want the file to go to?
   path = "clean_data",
   # Where is the file stored within the OSF repository?

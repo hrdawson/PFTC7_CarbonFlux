@@ -114,17 +114,6 @@ unzip(
 file.remove("raw_data/LI7500/LI7500_Site 5.zip") #let's free some space
 
 # Soil respiration (LI8100) data ----
-## Compiled LI8100 data ----
-get_file(
-  # Which repository is it in?
-  node = "hk2cy",
-  # Which file do you want?
-  file = "LI8100_combined.csv",
-  # Where do you want the file to go to?
-  path = "raw_data/LI8100",
-  # Where is the file stored within the OSF repository?
-  remote_path = "raw_data/raw_flux_data/LI8100")
-
 ## Site 1 LI8100 data ----
 get_file(
   # Which repository is it in?
