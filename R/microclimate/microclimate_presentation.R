@@ -5,7 +5,6 @@ library(tidylog)
 library(lubridate)
 library(rstatix)
 # For color gradient
-library(hrbrthemes)
 library(viridis)
 
 # For standardised colors
@@ -57,7 +56,7 @@ tomst.means.moist = tomst |>
   mutate(diff = east - west)
 
 # Make trial plot with basic Tomst data ----
-ggplot(tomst |> filter(metric != "Soil moisture"),
+ggplot(tomst |> filter(metric != "Soil moisture (%)"),
        aes(x = value, y = as.factor(elevation), fill = aspect)) +
   geom_density_ridges(alpha = 0.7, color = "grey50") +
   theme_ridges() +
@@ -68,7 +67,7 @@ ggplot(tomst |> filter(metric != "Soil moisture"),
 
 ggsave("visualizations/2023.12.17_tempTomst.png", width = 10, height = 8, units = "in")
 
-ggplot(tomst |> filter(metric == "Soil moisture"),
+ggplot(tomst |> filter(metric == "Soil moisture (%)"),
        aes(x = value, y = as.factor(elevation), fill = aspect)) +
   geom_density_ridges(alpha = 0.7, color = "grey50") +
   theme_ridges() +
@@ -176,3 +175,9 @@ ggplot(temps,
   theme_ridges() +
   facet_grid(~day.night, scales = "free_x")
 ggsave("visualizations/2023.12.17_tempMethods.png", width = 10, height = 8, units = "in")
+
+tomst |>
+  pivot_wider(names_from = metric, values_from = value) |>
+  select(siteID, aspect, elevation, day.night, 'Aboveground T (ºC)',
+         'Soil moisture (%)', 'Soil T (ºC)', 'Surface T (ºC)') |>
+  ggpairs()
