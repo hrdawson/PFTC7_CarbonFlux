@@ -23,15 +23,15 @@ write.csv(data_dic_fluxes, "data_dic/dataDic_LI7500.csv")
 
 # Soil respiration 8100 data dic ----
 # Start by creating a template CSV
-get_started(data = read.csv("clean_data/LI8100_combined.csv"))
+get_started(data = read.csv("clean_data/LI8100_fluxes.csv"))
 
 # Open the template CSV and fill in manually
 # Save it in the data_dic folder and use the file name for the description_table argument
 
 # Make sure to save it as something other than its default name
-data_dic_soilResp <- make_data_dictionary(data = read.csv("clean_data/LI8100_combined.csv"),
+data_dic_soilResp <- make_data_dictionary(data = read.csv("clean_data/LI8100_fluxes.csv"),
                                         description_table = read.csv("data_dic/description_table_LI8100.csv"),
-                                        table_ID = "soilResp",
+                                        table_ID = "LI8100",
                                         keep_table_ID = FALSE)
 write.csv(data_dic_soilResp, "data_dic/dataDic_LI8100.csv")
 
