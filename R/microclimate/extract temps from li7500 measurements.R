@@ -36,4 +36,7 @@ meta <- tibble(file_path = unlist(licor_files),
          measurement = unlist(lapply(file, function(x) gsub(".txt","",tail(str_split(x, "_")[[1]],1)))),
          redo = grepl("redo", file, ignore.case = T))
 
-
+# Make list of just the ambients to read in
+filesAmbient = meta |>
+  filter(measurement == "a") |>
+  select(file_path)
