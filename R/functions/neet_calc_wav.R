@@ -7,6 +7,8 @@ neet_wav <- function(filename, PAR=NULL, fluxfiles,
                      SS_thresh = 90.0,
                      par_thresh = 650){
   
+  ambient_file <- "N/A"
+  
   
   suppressMessages(suppressWarnings(
     LI_dat <- read_delim(filename, delim="\t", skip = licor_skip)))
