@@ -46,7 +46,7 @@ flux_calc_seg <- function(fluxfiles, PAR_files=NULL,
     stats.df <- purrr::map_df(c(sort(fluxfiles$photo_names), 
                                 sort(fluxfiles$resp_names)),
                                 ~neet_wav(., PAR=PAR_comb, fluxfiles=fluxfiles ,
-                                          param = param))
+                                          param = param, vol = vol, area = area))
   }
   else if(dat_sel == "best fit"){
         # segs <- c(1:nrow(cprime_seg))
