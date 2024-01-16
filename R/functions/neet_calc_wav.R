@@ -56,7 +56,7 @@ neet_wav <- function(filename, PAR=NULL, fluxfiles,
   
   check_night_resp <- FALSE
   
-  if(grepl("night", filename, fixed = TRUE)){
+  if(grepl("resp", filename, fixed = TRUE)){
     check_night_resp <- TRUE
   }
   
