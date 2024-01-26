@@ -30,15 +30,16 @@ f <- dir(path = "raw_data/microclimate/PFTC7", pattern = "^data_.*.csv$",
          full.names = TRUE, recursive = TRUE)
 
 # Read and combine Tomst data
-d <- read_tomst_data(f, tzone = "Etc/GMT-2") %>%
+d1 <- read_tomst_data(f, tzone = "Etc/GMT-2") %>%
   distinct(tomst_id, datetime, .keep_all = T) %>% # Remove dublicates
   arrange(tomst_id, datetime) |>
   filter(datetime >= mind, #filter with setted time
          datetime <= maxd)
 
 # Join Tomst data and metadata
-d <- left_join(ids, d) %>%
-  mutate(moist_vol = cal_funNA(moist)) # transform raw moisture counts to volumetric moisture content
+d <- left_join(ids, d1) %>%
+  mutate(moist_vol = cal_funNA(moist)) |> # transform raw moisture counts to volumetric moisture content
+  dplyr::rename(temp_soil_C = T1, temp_ground_C = T2, temp_air_C = T3) #rename temps by location
 
 # Plot temperature timeseries
 d %>%
