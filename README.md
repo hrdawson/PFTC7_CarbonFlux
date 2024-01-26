@@ -72,7 +72,7 @@ Repo for Group 3: Carbon Fluxes as part of PFTC7 in South Africa
 | 4  | site          | Site number                                                   | numeric       | 1 - 5                    | numeric     | defined      |
 | 5  | aspect        | Plot aspect                                                   | categorical   | east - west              | categorical | defined      |
 | 6  | plot          | Plot number                                                   | numeric       | 1 - 5                    | numeric     | defined      |
-| 7  | datetime      | Date and time of measurement                                  | categorical   | 2023-12-07 - 2023-12-16  | categorical | defined      |
+| 7  | datetime      | Date and time of measurement in local time                    | categorical   | 2023-12-07 - 2023-12-16  | categorical | defined      |
 | 8  | zone          | We don't know what this does                                  | numeric       | 4 - 8                    | numeric     | defined      |
 | 9  | temp_soil_C   | Air temperature, 15 cm above ground                           | numeric       | 8.375 - 27.375           | numeric     | measured     |
 | 10 | temp_ground_C | Temperature at ground level                                   | numeric       | 4.438 - 36.625           | numeric     | measured     |
