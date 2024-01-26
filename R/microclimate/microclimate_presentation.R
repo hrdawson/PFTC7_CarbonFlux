@@ -106,6 +106,9 @@ FLIR.means = FLIRflat |>
   group_by(siteID, day.night) |>
   get_summary_stats(temp_C, type = "mean_sd")
 
+# For standardised colors
+library(MetBrewer)
+scale_color_met_d(name = "Cassatt2")
 
 ggplot(FLIRflat, aes(x = temp_C, y = as.factor(elevation), fill = aspect, color = aspect)) +
   geom_density_ridges(alpha = 0.7, color = "grey50") +
