@@ -52,3 +52,15 @@ get_file(
   path = "clean_data",
   # Where is the file stored within the OSF repository?
   remote_path = "climate_data")
+
+## Clean FLIR data ----
+# Note that this file is 383MB and may cause R to crash. You can also download it from OSF at https://osf.io/gp8u9
+get_file(
+  # Which repository is it in?
+  node = "hk2cy",
+  # Which file do you want?
+  file = "flir_values.csv",
+  # Where do you want the file to go to?
+  path = "clean_data",
+  # Where is the file stored within the OSF repository?
+  remote_path = "climate_data")
