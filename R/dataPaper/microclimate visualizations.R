@@ -2,19 +2,47 @@
 # Someday I'll have a nice clean Tomst object to load...
 
 # Modified (heavily) from pFTC6 density plot
-microclimate <- FLIRflat |>
+## IRtemp is in `microclimate_presentation.R`
+
+test = read.csv("clean_data/flir_values.csv")
+str(test)
+
+microclimate <- read.csv("clean_data/flir_values.csv") |>
+  add_column(dataset = "FLIR") |>
+  # Make site 6 aspect none
+  mutate(aspect = case_when(
+    siteID == 6 ~ "none",
+    TRUE ~ aspect
+  )) |>
+  # Filter out negative values
+  filter(temp_C > 0) |>
   bind_rows(IRtemp) |>
+  pivot_longer(temp_C, names_to = "metric", values_to = "value") |>
   # Standardise columns for tomst
-  rename(value = temp_C) |>
   mutate(metric = case_when(
     dataset == "IR Temp" ~ "Leaf T (ºC)",
     dataset == "FLIR" ~ "Ground T (ºC)",
   )) |>
   # Bind in Tomst
-  bind_rows(tomst) |>
+  bind_rows(read.csv("clean_data/PFTC7_Tomst_Data.csv") |> 
+              pivot_longer(cols = temp_soil_C:moist_vol, names_to = "metric", values_to = "value") |>
+              mutate(dataset = "Tomst")|>
+              rename(siteID = site))  |>
+  bind_rows(read.csv("clean_data/LI7500_temperature.csv") |> 
+              pivot_longer('Temperature..C.', names_to = "metric", values_to = "value") |>
+              mutate(dataset = "LI-7500")) |>
   # Factor variables
-  mutate(metric = factor(metric, levels = c("Aboveground T (ºC)", "Leaf T (ºC)", "Surface T (ºC)",
+  mutate(metric = case_when(
+    metric == "moist_vol" ~ "Soil moisture (%)",
+    metric %in% c("temp_air_C", "Temperature..C.") ~ "Surface T (ºC)",
+    metric == "temp_ground_C" ~ "Ground T (ºC)",
+    metric == "temp_soil_C" ~ "Soil T (ºC)",
+    TRUE ~ metric,
+  ),
+    metric = factor(metric, levels = c("Aboveground T (ºC)", "Leaf T (ºC)", "Surface T (ºC)",
                                             "Ground T (ºC)", "Soil T (ºC)", "Soil moisture (%)"))) |>
+  # Drop unneeded Tomst variable
+  drop_na(metric) |>
   # Select relevant rows
   select(day.night, siteID, aspect, plotID, dataset, metric, value) |>
   mutate(day.night = str_to_title(day.night)) |>
@@ -55,5 +83,21 @@ ggplot(microclimate, aes(x=value, fill=aspect)) +
         text=element_text(size=11)
   )
 
-ggsave("visualizations/2023.12.19_dataPaper_microclimate.png",
+ggsave("visualizations/2023.01.29_dataPaper_microclimate.png",
        width = 14, height = 10, units = "in")
+
+
+test = read.csv("clean_data/PFTC7_Tomst_Data.csv") |> 
+  pivot_longer(cols = temp_soil_C:moist_vol, names_to = "metric", values_to = "value") |>
+  mutate(dataset = "Tomst") |>
+  mutate(aspect = factor(aspect, levels = c("east", "west", "none")),
+         elevation = factor(case_when(
+           siteID == 6 ~ 3000,
+           siteID == 5 ~ 2800,
+           siteID == 4 ~ 2600,
+           siteID == 3 ~ 2400,
+           siteID == 2 ~ 2200,
+           siteID == 1 ~ 2000
+         ), levels = c("3000", "2800", "2600", "2400", "2200", "2000")))
+
+str(test)
