@@ -20,6 +20,7 @@ tomst = read.csv("clean_data/PFTC7_Tomst_Data.csv") |>
   rename(siteID = site) |>
   # alter so that all temps have the same name
   mutate(metric = factor(case_when(
+    ## NOTE THAT THESE ARE INCORRECT ##
     metric == "T1" ~ "Aboveground T (ºC)",
     metric == "T2" ~ "Surface T (ºC)",
     metric == "T3" ~ "Soil T (ºC)",
@@ -120,7 +121,7 @@ ggplot(FLIRflat, aes(x = temp_C, y = as.factor(elevation), fill = aspect, color 
 ggsave("visualizations/2023.12.17_tempFLIR.png", width = 10, height = 8, units = "in")
 
 # Import IR temp gun data ----
-IRtemp = read.csv("raw_data/PFTC7_SA_raw_fluxes_2023.csv") |>
+IRtemp = read.csv("raw_data/LI7500/PFTC7_SA_raw_fluxes_2023.csv") |>
   drop_na(siteID) |>
   # flag erroneous reads
   mutate(flag = case_when(
