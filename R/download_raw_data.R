@@ -8,6 +8,17 @@ library(dataDownloader)
 
 
 # Tent flux (LI7500) data ----
+## LI7500 metadata (plot data) ----
+get_file(
+  # Which repository is it in?
+  node = "hk2cy",
+  # Which file do you want?
+  file = "PFTC7_SA_raw_fluxes_2023.csv",
+  # Where do you want the file to go to?
+  path = "raw_data/LI7500",
+  # Where is the file stored within the OSF repository?
+  remote_path = "raw_data/raw_flux_data/LI7500")
+
 ## Compiled LI7500 data ----
 get_file(
   # Which repository is it in?
