@@ -21,7 +21,50 @@ library(tidyverse)
 library(data.table)
 
 
-## TENT CO2 --------------
+# TENT CO2 --------------
+
+## Code for processing segmented flux data ----
+# Import segmented flux data
+licor_nee = read_csv2("clean_data/segmented_fluxes_comments.csv") |>
+  filter(is.na(comment))
+
+#modify and restructure the data
+dt.nee <- licor_nee |>
+  filter(flag %in% c("okay")) |>
+  # select(-'...1') |>
+  rename(file = filename) |>
+  # left_join(meta) |>
+  # Drop unnecessary parts of the file name
+  mutate(file = basename(file),
+         file = str_remove(file, ".txt")
+  ) |>
+  # Separate into relevant info
+  separate(file, into = c("siteID", "elevation", "aspect", "plotID", "day.night"), remove = FALSE) |>
+  # Rename site and plot so they behave
+  mutate(siteID = paste0("Site ", siteID),
+         plotID = paste0("Plot ", plotID),
+         # Add column for redos
+         redo = case_when(
+           str_detect(file, "redo") ~ "second",
+           str_detect(file, "redo2") ~ "third",
+           TRUE ~ "first"),
+         # Set flux type
+         flux = case_when(
+           str_detect(file, "photo") ~ "NEE",
+           str_detect(file, "resp") ~ "ER",
+           str_detect(file, "a") ~ "Ambient")
+  ) |>
+  # Pivot
+  select(site, plot, aspect, elevation, day.night, flux, nee_lm) |>
+  pivot_wider(names_from = flux, values_from = nee_lm) |>
+  # Calculate GPP
+  mutate(GPP = case_when(
+    !is.na(NEE) ~ as.numeric(NEE)-as.numeric(ER),
+    TRUE ~ NA
+  ))
+as.data.table() 
+
+# Archived way of doing this ----
 
 fix_file_names(path = "raw_data/LI7500/")
 
@@ -280,46 +323,7 @@ summary(dt.res) #interestingly, we seem do drop one GPP value here.
 
 fwrite(dt.res, "outputs/prelim_flux_results.csv")
 
-# Code for processing segmented flux data ----
-# Import segmented flux data
-licor_nee = read_csv2("clean_data/segmented_fluxes_comments.csv") |>
-  filter(is.na(comment))
 
-#modify and restructure the data
-dt.nee <- licor_nee |>
-  filter(flag %in% c("okay")) |>
-  # select(-'...1') |>
-  rename(file = filename) |>
-  # left_join(meta) |>
-  # Drop unnecessary parts of the file name
-  mutate(file = basename(file),
-         file = str_remove(file, ".txt")
-  ) |>
-  # Separate into relevant info
-  separate(file, into = c("siteID", "elevation", "aspect", "plotID", "day.night"), remove = FALSE) |>
-  # Rename site and plot so they behave
-  mutate(siteID = paste0("Site ", siteID),
-         plotID = paste0("Plot ", plotID),
-         # Add column for redos
-         redo = case_when(
-           str_detect(file, "redo") ~ "second",
-           str_detect(file, "redo2") ~ "third",
-           TRUE ~ "first"),
-         # Set flux type
-         flux = case_when(
-           str_detect(file, "photo") ~ "NEE",
-           str_detect(file, "resp") ~ "ER",
-           str_detect(file, "a") ~ "Ambient")
-  ) |>
-  # Pivot
-  select(site, plot, aspect, elevation, day.night, flux, nee_lm) |>
-  pivot_wider(names_from = flux, values_from = nee_lm) |>
-  # Calculate GPP
-  mutate(GPP = case_when(
-    !is.na(NEE) ~ as.numeric(NEE)-as.numeric(ER),
-    TRUE ~ NA
-  ))
-  as.data.table() 
 
 ## PLOT --------------------
 library(MetBrewer)
