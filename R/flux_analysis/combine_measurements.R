@@ -279,6 +279,82 @@ dt.res[, `:=` (NPP_mean = mean(NPP, na.rm = TRUE),
 summary(dt.res) #interestingly, we seem do drop one GPP value here.
 
 fwrite(dt.res, "outputs/prelim_flux_results.csv")
+
+# Code for processing segmented flux data ----
+# Import segmented flux data
+licor_nee = read_csv2("clean_data/segmented_fluxes_comments.csv") |>
+  filter(is.na(comment))
+
+#modify and restructure the data
+dt.nee <- licor_nee |>
+  select(-'...1') |>
+  rename(file = filename) |>
+  # left_join(meta) |>
+  # Drop unnecessary parts of the file name
+  mutate(file = basename(file),
+         file = str_remove(file, ".txt")
+  ) |>
+  # Separate into relevant info
+  separate(file, into = c("siteID", "elevation", "aspect", "plotID", "day.night"), remove = FALSE) |>
+  # Rename site and plot so they behave
+  mutate(siteID = paste0("Site ", siteID),
+         plotID = paste0("Plot ", plotID),
+         # Add column for redos
+         redo = case_when(
+           str_detect(file, "redo") ~ "second",
+           str_detect(file, "redo2") ~ "third",
+           TRUE ~ "first"),
+         # Set flux type
+         flux = case_when(
+           str_detect(file, "photo") ~ "NEE",
+           str_detect(file, "resp") ~ "ER",
+           str_detect(file, "a") ~ "Ambient")
+  ) |>
+  # Create uniqueID
+  mutate(uniqueID = paste0(siteID, " ", aspect, " ", plotID, " ", day.night, ' ', flux)) |>
+  as.data.table() 
+  # Make a column for fluxes valid for calculation
+  mutate(flux_best = nee_lm,
+         flux_best = case_when(
+           comment == "Should not be negative" ~ NA,
+           comment == "Should not be positive" ~ NA,
+           TRUE ~ flux_best
+         ))
+  
+dt.day = dt.nee |>
+  # Add pivot ID
+  mutate(pairID = paste0(site, "_", aspect, "_", plot, "_", day.night)) |>
+  # Filter to just day values
+  filter(day.night == "day") |>
+  select(site, elevation, aspect, plot, day.night, flux, nee_lm) |>
+  # Pivot
+  pivot_wider(names_from = flux, values_from = nee_lm)
+
+#split up in resp and photo and join again later to calculate GPP
+dt.resp <- dt.nee[flux == "ER" & day.night == "day" , .(flux_best, day.night, plot, elevation, aspect, redo, file)]
+dt.photo <- dt.nee[flux == "NEE" & day.night == "day", .(flux_best, day.night, plot, elevation, aspect, redo, file, tav)]
+
+
+
+setnames(dt.resp, c("flux_best", "file", "redo"), c("resp_best", "resp_file", "resp_redo"))
+setnames(dt.photo, c("flux_best", "file", "redo"), c("nee_best", "nee_file", "nee_redo"))
+
+dt.carb <- left_join(dt.photo, dt.resp, by = c("day.night", "plot", "elevation", "aspect")) |>
+  mutate(GPP = case_when(
+    is.na(nee_best) ~ "none",
+    is.na(resp_best) ~ "none",
+    TRUE ~ nee_best - resp_best
+  ),
+         NEE = nee_best,
+         ER = resp_best)
+
+#calculate GPP
+
+
+dt.carb[, GPP := nee_best - resp_best,]
+dt.carb[, NEE := nee_best,]
+dt.carb[, ER := resp_best,]
+
 ## PLOT --------------------
 library(MetBrewer)
 
