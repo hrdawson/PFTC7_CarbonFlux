@@ -2,7 +2,7 @@
 # Note that these are messy data that haven't been cleaned yet
 
 # Read in flux datasets
-LI7500 = read.csv("outputs/2023.12.19_Cflux_originalCalc.csv") |>
+LI7500 = read_csv2("clean_data/segmented_fluxes_comments.csv") 
   mutate(dataset = "Ecosystem fluxes") |>
   pivot_longer(cols = c(GPP, NEE, ER), names_to = "metric", values_to = "value") |>
   mutate(plotID = as.character(plot)) |>
