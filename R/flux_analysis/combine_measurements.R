@@ -287,7 +287,8 @@ licor_nee = read_csv2("clean_data/segmented_fluxes_comments.csv") |>
 
 #modify and restructure the data
 dt.nee <- licor_nee |>
-  select(-'...1') |>
+  filter(flag %in% c("okay")) |>
+  # select(-'...1') |>
   rename(file = filename) |>
   # left_join(meta) |>
   # Drop unnecessary parts of the file name
@@ -310,25 +311,25 @@ dt.nee <- licor_nee |>
            str_detect(file, "resp") ~ "ER",
            str_detect(file, "a") ~ "Ambient")
   ) |>
-  # Create uniqueID
-  mutate(uniqueID = paste0(siteID, " ", aspect, " ", plotID, " ", day.night, ' ', flux)) |>
+  # Pivot
+  select(site, plot, aspect, elevation, day.night, flux, nee_lm) |>
+  pivot_wider(names_from = flux, values_from = nee_lm) |>
+  # Calculate GPP
+  mutate(GPP = case_when(
+    !is.na(NEE) ~ as.numeric(NEE)-as.numeric(ER),
+    TRUE ~ NA
+  ))
   as.data.table() 
-  # Make a column for fluxes valid for calculation
-  mutate(flux_best = nee_lm,
-         flux_best = case_when(
-           comment == "Should not be negative" ~ NA,
-           comment == "Should not be positive" ~ NA,
-           TRUE ~ flux_best
-         ))
-  
+
 dt.day = dt.nee |>
   # Add pivot ID
   mutate(pairID = paste0(site, "_", aspect, "_", plot, "_", day.night)) |>
   # Filter to just day values
   filter(day.night == "day") |>
-  select(site, elevation, aspect, plot, day.night, flux, nee_lm) |>
   # Pivot
-  pivot_wider(names_from = flux, values_from = nee_lm)
+  pivot_wider(names_from = flux, values_from = nee_lm) 
+
+
 
 #split up in resp and photo and join again later to calculate GPP
 dt.resp <- dt.nee[flux == "ER" & day.night == "day" , .(flux_best, day.night, plot, elevation, aspect, redo, file)]
