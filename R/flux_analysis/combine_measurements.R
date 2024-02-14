@@ -29,8 +29,9 @@ licor_nee = read_csv2("clean_data/segmented_fluxes_comments.csv") |>
   filter(is.na(comment))
 
 #modify and restructure the data
+# Right now this version of `licor_nee` is made with the `Clean flagging of dud data.R`
 dt.nee <- licor_nee |>
-  filter(flag %in% c("okay")) |>
+  filter(flag %in% c("okay", "manual_flux_time_selection")) |>
   # select(-'...1') |>
   rename(file = filename) |>
   # left_join(meta) |>
@@ -62,7 +63,10 @@ dt.nee <- licor_nee |>
     !is.na(NEE) ~ as.numeric(NEE)-as.numeric(ER),
     TRUE ~ NA
   ))
-as.data.table() 
+
+dt.missing.nee = dt.nee |>
+  filter(day.night == "day") |>
+  filter(is.na(GPP))
 
 # Archived way of doing this ----
 
