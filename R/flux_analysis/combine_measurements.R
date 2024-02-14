@@ -25,8 +25,8 @@ library(data.table)
 
 ## Code for processing segmented flux data ----
 # Import segmented flux data
-licor_nee = read_csv2("clean_data/segmented_fluxes_comments.csv") |>
-  filter(is.na(comment))
+# licor_nee = read_csv2("clean_data/segmented_fluxes_comments.csv") |>
+  # filter(is.na(comment))
 
 #modify and restructure the data
 # Right now this version of `licor_nee` is made with the `Clean flagging of dud data.R`
