@@ -321,41 +321,6 @@ dt.nee <- licor_nee |>
   ))
   as.data.table() 
 
-dt.day = dt.nee |>
-  # Add pivot ID
-  mutate(pairID = paste0(site, "_", aspect, "_", plot, "_", day.night)) |>
-  # Filter to just day values
-  filter(day.night == "day") |>
-  # Pivot
-  pivot_wider(names_from = flux, values_from = nee_lm) 
-
-
-
-#split up in resp and photo and join again later to calculate GPP
-dt.resp <- dt.nee[flux == "ER" & day.night == "day" , .(flux_best, day.night, plot, elevation, aspect, redo, file)]
-dt.photo <- dt.nee[flux == "NEE" & day.night == "day", .(flux_best, day.night, plot, elevation, aspect, redo, file, tav)]
-
-
-
-setnames(dt.resp, c("flux_best", "file", "redo"), c("resp_best", "resp_file", "resp_redo"))
-setnames(dt.photo, c("flux_best", "file", "redo"), c("nee_best", "nee_file", "nee_redo"))
-
-dt.carb <- left_join(dt.photo, dt.resp, by = c("day.night", "plot", "elevation", "aspect")) |>
-  mutate(GPP = case_when(
-    is.na(nee_best) ~ "none",
-    is.na(resp_best) ~ "none",
-    TRUE ~ nee_best - resp_best
-  ),
-         NEE = nee_best,
-         ER = resp_best)
-
-#calculate GPP
-
-
-dt.carb[, GPP := nee_best - resp_best,]
-dt.carb[, NEE := nee_best,]
-dt.carb[, ER := resp_best,]
-
 ## PLOT --------------------
 library(MetBrewer)
 
