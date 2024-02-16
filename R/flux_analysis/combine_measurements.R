@@ -13,13 +13,10 @@ source("R/functions/calc_SR.R")
 source("R/functions/flux_calc_own.R")
 source("R/functions/fix_file_names.R")
 
-
-
 #packages
 library(co2fluxtent)
 library(tidyverse)
 library(data.table)
-
 
 # TENT CO2 --------------
 
