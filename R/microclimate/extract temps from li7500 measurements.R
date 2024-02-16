@@ -7,6 +7,7 @@ library(data.table)
 # Read in all the ambient files ----
 # Remember to fix the file names if you've just downloaded from OSF
 source("R/functions/fix_file_names.R")
+source("R/functions/flux_calc_own.R")
 fix_file_names(path = "raw_data/LI7500/")
 
 list.files("raw_data/LI7500/", recursive = TRUE)
@@ -16,7 +17,6 @@ licor_files <- Map(c, co2fluxtent::read_files("raw_data/LI7500/LI7500_Site 1"),
                    co2fluxtent::read_files("raw_data/LI7500/LI7500_Site 3"),
                    co2fluxtent::read_files("raw_data/LI7500/LI7500_Site 4"),
                    co2fluxtent::read_files("raw_data/LI7500/LI7500_Site 5"))
-
 
 ## clean file names
 # Check if the files are ok
@@ -42,11 +42,13 @@ t.ambient = tempAmbient |>
          File = str_remove(File, ".txt")
   ) |>
   # Separate into relevant info
-  separate(File, into = c("flux", "siteID", "elevation", "aspect", "day.night"), remove = FALSE) |>
+  separate(File, into = c("siteID", "elevation", "aspect", "plot", "day.night"), remove = FALSE) |>
   # Get just the relevant data
-  select(flux:day.night, Time:`Sequence Number`, `Temperature (C)`, `CO2 Signal Strength`) |>
+  select(File:day.night, Time:`Sequence Number`, `Temperature (C)`, `CO2 Signal Strength`) |>
   # Filter to just data with a decent signal strength
   filter(`CO2 Signal Strength` >= 90)
+
+write.csv(t.ambient, "clean_data/LI7500_temperature.csv")
 
 # Summarise by the ten minute interval so that we can compare to Tomst ----
 library(lubridate)

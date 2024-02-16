@@ -8,23 +8,46 @@ library(dataDownloader)
 
 # Fluxes ----
 ## Clean LI7500 data ----
-# WARNING: These data aren't actually clean
-# They're just the best that we have while Michael works on the new way of cleaning fluxes
+### All carbon fluxes ----
 get_file(
   # Which repository is it in?
   node = "hk2cy",
   # Which file do you want?
-  file = "LI7500_Cflux_originalCalc.csv",
+  file = "licor_nee_flagged.csv",
   # Where do you want the file to go to?
   path = "clean_data",
   # Where is the file stored within the OSF repository?
   remote_path = "flux_data")
 
+### Carbon fluxes made pretty ----
 get_file(
   # Which repository is it in?
   node = "hk2cy",
   # Which file do you want?
-  file = "LI7500_H2Oflux_originalCalc.csv",
+  file = "licor7500_carbon_fluxes.csv",
+  # Where do you want the file to go to?
+  path = "clean_data",
+  # Where is the file stored within the OSF repository?
+  remote_path = "flux_data")
+
+## Water fluxes ----
+### All water fluxes ----
+get_file(
+  # Which repository is it in?
+  node = "hk2cy",
+  # Which file do you want?
+  file = "licor_et_flagged.csv",
+  # Where do you want the file to go to?
+  path = "clean_data",
+  # Where is the file stored within the OSF repository?
+  remote_path = "flux_data")
+
+### Water fluxes made pretty ----
+get_file(
+  # Which repository is it in?
+  node = "hk2cy",
+  # Which file do you want?
+  file = "licor7500_ET_fluxes.csv",
   # Where do you want the file to go to?
   path = "clean_data",
   # Where is the file stored within the OSF repository?
@@ -36,6 +59,17 @@ get_file(
   node = "hk2cy",
   # Which file do you want?
   file = "LI8100_combined.csv",
+  # Where do you want the file to go to?
+  path = "clean_data",
+  # Where is the file stored within the OSF repository?
+  remote_path = "flux_data")
+
+### Soil fluxes made pretty ----
+get_file(
+  # Which repository is it in?
+  node = "hk2cy",
+  # Which file do you want?
+  file = "licor8100_soil_fluxes.csv",
   # Where do you want the file to go to?
   path = "clean_data",
   # Where is the file stored within the OSF repository?
