@@ -134,7 +134,7 @@ licor_et_duplicates_discard = licor_et_duplicates |>
   # Filter out the ones kept in the object above
   anti_join(licor_nee_duplicates_keep) |>
   # Flag
-  mutate(flag = replace_na("high_aic_discard_this_keep_redo"))
+  mutate(flag = replace_na("high_aic_discard_this_keep_other_reading"))
 
 # Combine the duplicates
 licor_et_duplicates_all = licor_et_duplicates_keep |>
