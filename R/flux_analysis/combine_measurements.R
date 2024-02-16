@@ -19,7 +19,6 @@ library(tidyverse)
 library(data.table)
 
 # TENT CO2 --------------
-
 ## Code for processing segmented flux data ----
 # Import segmented flux data
 # licor_nee = read_csv2("clean_data/segmented_fluxes_comments.csv") |>
@@ -64,6 +63,33 @@ dt.nee <- licor_nee |>
 dt.missing.nee = dt.nee |>
   filter(day.night == "day") |>
   filter(is.na(GPP))
+
+write.csv(dt.nee, "clean_data/licor7500_carbon_fluxes.csv")
+
+# Tent H2O ----
+## Code for processing segmented flux data ----
+# Import segmented flux data
+# licor_nee = read_csv2("clean_data/segmented_fluxes_comments.csv") |>
+# filter(is.na(comment))
+
+#modify and restructure the data
+# Right now this version of `licor_nee` is made with the `Clean flagging of dud data.R`
+dt.et <- licor_et |>
+  dplyr::filter(flag %in% c("okay", "manual_flux_time_selection")) |>
+  # Remove unique columns
+  select(site:day.night, flux, flux_lm) |>
+  pivot_wider(names_from = flux, values_from = flux_lm) |>
+  # Calculate transpiration
+  mutate(Trans = case_when(
+    !is.na(Tlight) ~ as.numeric(Tlight)-as.numeric(Tdark),
+    TRUE ~ NA
+  ))
+
+dt.missing.et = dt.et |>
+  filter(day.night == "day") |>
+  filter(is.na(Trans))
+
+write.csv(dt.et, "clean_data/licor7500_ET_fluxes.csv")
 
 # Archived way of doing this ----
 
