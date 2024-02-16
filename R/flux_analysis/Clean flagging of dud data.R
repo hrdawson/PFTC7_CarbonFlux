@@ -59,7 +59,7 @@ licor_nee = licor_nee_start |>
   #Remove extra column
   select(-c(flag2,'...1'))
 
-write.csv(licor_nee, "clean_data/licor_nee_flagged.csv")
+# write.csv(licor_nee, "clean_data/licor_nee_flagged.csv")
 
 # H2O fluxes ----
 library(readxl)
