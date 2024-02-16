@@ -1,3 +1,4 @@
+# CO2 Fluxes ----
 # Detect duplicates
 licor_nee_duplicates = read_csv2("clean_data/segmented_fluxes_comments.csv") |>
   # Automate the comments on the flux file
@@ -61,3 +62,34 @@ licor_nee = read_csv2("clean_data/segmented_fluxes_comments.csv") |>
   ) |>
   #Remove extra column
   select(-c(flag2,'...1'))
+
+# H2O fluxes ----
+library(readxl)
+
+licor_et_comments = read_excel("raw_data/licor_et_cleaning_comments.xlsx") |>
+  select(filename, comments) |>
+  mutate(filename = paste(filename, "txt", sep = "."))
+
+licor_et = read_csv("raw_data/licor_et_raw.csv") |>
+  select(-c('...1')) |>
+  # Add in comments
+  left_join(licor_et_comments) |>
+  # Write machine usable comments
+  mutate(flag = case_when(
+    is.na(comments) ~ "okay",
+    comments == "Looks good" ~ "okay",
+    comments == "Redo2 is better" ~ "discard_this_keep_redo",
+    comments == "Redo is better" & flagged == TRUE ~ "discard_this_keep_redo",
+    comments == "Redo is better" & flagged == FALSE ~ "okay",
+    comments == "There is a better redo" ~ "discard_this_keep_redo",
+    comments == "This is better but needed a cut" ~ "manual_flux_time_selection",
+    comments == "This is better" ~ "manual_flux_time_selection",
+    comments == "Needed to be cut" ~ "manual_flux_time_selection",
+    comments == "The original is better" ~ "discard_this_keep_redo",
+    comments == "signalstrength low for the whole measurement" ~ "suspicious",
+    comments == "Signalstrength low for the whole measurement" ~ "suspicious",
+    comments == "low signalstrength in the beginning" ~ "manual_flux_time_selection",
+    comments == "Saturated and goes down around 70 sec" ~ "manual_flux_time_selection",
+    comments == "Signalstrength below 95 at 50 sec" ~ "suspicious",
+    comments == "Saturated after 55 sec" ~ "manual_flux_time_selection"
+  ))
