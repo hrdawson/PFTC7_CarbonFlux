@@ -2,23 +2,22 @@
 # Note that these are messy data that haven't been cleaned yet
 
 # Read in flux datasets
-LI7500 = read_csv2("clean_data/segmented_fluxes_comments.csv") 
+LI7500 = read.csv("clean_data/licor7500_carbon_fluxes.csv") |>
   mutate(dataset = "Ecosystem fluxes") |>
   pivot_longer(cols = c(GPP, NEE, ER), names_to = "metric", values_to = "value") |>
-  mutate(plotID = as.character(plot)) |>
-  select(plotID, elevation, aspect, metric, value, dataset)
+  select(plot, elevation, aspect, metric, value, dataset)
 
-LI8100 = dt.sr |>
+# LI8100 = dt.sr |>
+LI8100 = read.csv("clean_data/licor8100_soil_fluxes.csv") |>
   mutate(dataset = "Soil respiration") |>
-  rename(CO2 = co2_flux_sr, H2O = h2o_flux_sr) |>
+  # rename(CO2 = co2_flux_sr, H2O = h2o_flux_sr) |>
   pivot_longer(cols = c(CO2, H2O), names_to = "metric", values_to = "value") |>
-  select(plotID, elevation, aspect, metric, value, dataset)
+  select(plot, elevation, aspect, metric, value, dataset)
 
-LI7500H2O = read.csv("outputs/2023.12.19_H2Oflux_originalCalc.csv") |>
+LI7500H2O = read.csv("clean_data/licor7500_ET_fluxes.csv") |>
   mutate(dataset = "Water fluxes") |>
   pivot_longer(cols = c(TRANS, ET, EVAP), names_to = "metric", values_to = "value") |>
-  mutate(plotID = as.character(plot)) |>
-  select(plotID, elevation, aspect, metric, value, dataset)
+  select(plot, elevation, aspect, metric, value, dataset)
 
 # Join datasets
 flux.all = LI7500 |>
@@ -26,11 +25,13 @@ flux.all = LI7500 |>
   # Factor relevant metrics
   mutate(aspect = factor(aspect, levels = c("east", "west", "none")),
          elevation = factor(elevation,
-                            levels = c("3000", "2800", "2600", "2400", "2200", "2000")))
+                            levels = c("3000", "2800", "2600", "2400", "2200", "2000"))) |>
+  drop_na(value)
 
 # Visualize
 
 library(ggh4x)
+library(viridis)
 
 ggplot(flux.all, aes(x=value, fill=aspect)) +
   geom_density(alpha=0.6, linewidth = 0.6) +
@@ -55,6 +56,6 @@ ggplot(flux.all, aes(x=value, fill=aspect)) +
     text=element_text(size=11)
   )
 
-ggsave("visualizations/2023.12.19_dataPaper_flux.png",
+ggsave("visualizations/2023.02.17_dataPaper_flux.png",
        width = 14, height = 10, units = "in")
 
