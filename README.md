@@ -2,15 +2,15 @@
 Repo for Group 3: Carbon Fluxes as part of PFTC7 in South Africa
 
 # Flag handling
-| Flag                                     | Replaced flux | Explanation                                                                                                                  | Recommended action | # of CO2/H2O fluxes  |   |   |   |   |   |
-|------------------------------------------|---------------|------------------------------------------------------------------------------------------------------------------------------|--------------------|----------------------|---|---|---|---|---|
-| decreasing_NEE                           | NA            | NEE decreased during the flux measurement (often followed by a redo)                                                         | discard            | 4/0                  |   |   |   |   |   |
-| discard_this_keep_other_reading          | NA            | The less reliable of a pair of readings (usually with a redo)                                                                | discard            | 6/22                 |   |   |   |   |   |
-| high_aic_discard_this_keep_other_reading | NA            | The higher AIC value of a flux that was split into multiple pieces by the break points function.                             | discard            | 16/4                 |   |   |   |   |   |
-| increasing_ER                            | NA            | ER increased during the flux measurement (often followed by a redo                                                           | discard            | 2/0                  |   |   |   |   |   |
-| manual_flux_time_selection               | –             | The break points function failed to select the most biologically useful portion of the flux. A new time was manually chosen. | keep               | 6/34                 |   |   |   |   |   |
-| okay                                     | –             | –                                                                                                                            | keep               | 140/114              |   |   |   |   |   |
-| suspicious                               | NA            | The changes over time do not have a reasonable explanation.                                                                  | discard            | 1/4                  |   |   |   |   |   |
+| Flag                                     | Replaced flux | Explanation                                                                                                                  | Recommended action | # of CO2/H2O fluxes  |
+|------------------------------------------|---------------|------------------------------------------------------------------------------------------------------------------------------|--------------------|----------------------|
+| decreasing_NEE                           | NA            | NEE decreased during the flux measurement (often followed by a redo)                                                         | discard            | 4/0                  |
+| discard_this_keep_other_reading          | NA            | The less reliable of a pair of readings (usually with a redo)                                                                | discard            | 6/22                 |
+| high_aic_discard_this_keep_other_reading | NA            | The higher AIC value of a flux that was split into multiple pieces by the break points function.                             | discard            | 16/4                 |
+| increasing_ER                            | NA            | ER increased during the flux measurement (often followed by a redo                                                           | discard            | 2/0                  |
+| manual_flux_time_selection               | –             | The break points function failed to select the most biologically useful portion of the flux. A new time was manually chosen. | keep               | 6/34                 |
+| okay                                     | –             | –                                                                                                                            | keep               | 140/114              |
+| suspicious                               | NA            | The changes over time do not have a reasonable explanation.                                                                  | discard            | 1/4                  |
 
 # Data dictionaries
 ## Fluxes
