@@ -148,4 +148,4 @@ licor_et = licor_et_start |>
   #Remove extra column
   select(-c(flag2))
 
-# write.csv(licor_nee, "clean_data/licor_nee_flagged.csv")
+# write.csv(licor_et, "clean_data/licor_et_flagged.csv")
