@@ -17,7 +17,7 @@ licor_nee_start = read_csv2("clean_data/segmented_fluxes_comments.csv") |>
     extra_info == "Remove" & comment == "Should not be negative" ~ "decreasing_NEE",
     extra_info == "Remove" & comment == "should not be positive" ~ "increasing_ER",
     extra_info == "Has not been picked up in manual go-through" ~ "suspicious",
-    extra_info == "its increasing, changed it to 5-15, but should be removed" ~ "increasing_respiration",
+    extra_info == "its increasing, changed it to 5-15, but should be removed" ~ "increasing_ER",
     TRUE ~ "okay"
   )) 
 
@@ -58,9 +58,15 @@ licor_nee = licor_nee_start |>
   # Combine duplicate flags and automated comment flags
   mutate(flag = coalesce(flag, flag2)) |>
   #Remove extra column
-  select(-c(flag2,'...1'))
+  select(-c(flag2,'...1')) |>
+  # Apply recommended flagging
+  mutate(flux_value = case_when(
+    flag %in% c("okay", "manual_flux_time_selection") ~ nee_lm,
+    TRUE ~ NA
+  )) |>
+  rename(flux_value_original = nee_lm)
 
-# write.csv(licor_nee, "clean_data/licor_nee_flagged.csv")
+write.csv(licor_nee, "clean_data/licor_nee_flagged.csv")
 
 # H2O fluxes ----
 library(readxl)
@@ -146,6 +152,12 @@ licor_et = licor_et_start |>
   # Combine duplicate flags and automated comment flags
   mutate(flag = coalesce(flag, flag2)) |>
   #Remove extra column
-  select(-c(flag2))
+  select(-c(flag2)) |>
+  # Apply recommended flagging
+  mutate(flux_value = case_when(
+    flag %in% c("okay", "manual_flux_time_selection") ~ flux_lm,
+    TRUE ~ NA
+  )) |>
+  rename(flux_value_original = flux_lm)
 
 # write.csv(licor_et, "clean_data/licor_et_flagged.csv")
