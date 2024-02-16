@@ -46,31 +46,63 @@ dt.missing.nee = dt.nee |>
 write.csv(dt.nee, "clean_data/licor7500_carbon_fluxes.csv")
 
 # Tent H2O ----
-## Code for processing segmented flux data ----
 # Import segmented flux data
-# licor_nee = read_csv2("clean_data/segmented_fluxes_comments.csv") |>
-# filter(is.na(comment))
 
 #modify and restructure the data
-# Right now this version of `licor_nee` is made with the `Clean flagging of dud data.R`
-dt.et <- licor_et |>
+dt.et <- read.csv("clean_data/licor_et_flagged.csv") |>
   dplyr::filter(flag %in% c("okay", "manual_flux_time_selection")) |>
   # Remove unique columns
   select(site:day.night, flux, flux_lm) |>
   pivot_wider(names_from = flux, values_from = flux_lm) |>
   # Calculate transpiration
-  mutate(Trans = case_when(
-    !is.na(Tlight) ~ as.numeric(Tlight)-as.numeric(Tdark),
+  mutate(TRANS = case_when(
+    !is.na(EVAP) ~ as.numeric(ET)-as.numeric(EVAP),
     TRUE ~ NA
   ))
 
 dt.missing.et = dt.et |>
   filter(day.night == "day") |>
-  filter(is.na(Trans))
+  filter(is.na(TRANS))
 
-write.csv(dt.et, "clean_data/licor7500_ET_fluxes.csv")
+# write.csv(dt.et, "clean_data/licor7500_ET_fluxes.csv")
 
-# Archived way of doing this ----
+# SOIL RESPIRATION ----------------------
+
+#get file locations
+filesSR <- dir(path = "raw_data/LI8100/", pattern = ".81x", full.names = TRUE, recursive = TRUE)
+
+toi <- 120:179 #time of interest (not strictly necessary as this time is also the default)
+
+#read SR
+SR = read.csv("clean_data/LI8100_combined.csv") |>
+  add_column(toi = toi)
+
+SR <- readSR(files = filesSR, toi = toi)
+names(SR)
+
+ggplot(data = SR, aes(x = Etime, y = Cdry, color = iChunk)) +
+  geom_point() +
+  scale_color_viridis_c() +
+  facet_wrap(~ elevation) +
+  theme_minimal()
+
+#calc SR
+dt.sr <- calcSR(data = SR)
+dt.sr <- as.data.table(dt.sr)
+dt.sr <- dt.sr[!co2_flux_sr < 0]
+
+dt.soilResp = dt.sr |>
+  rename(CO2 = co2_flux_sr, H2O = h2o_flux_sr) |>
+  # Extract site and plot names and numbers for consistency
+  mutate(site = str_sub(siteID, -1, -1),
+         plot = str_sub(plotID, -1, -1)) |>
+  relocate(site, plot, .after = plotID) |>
+  select(site:aspect, CO2, H2O)
+
+# fwrite(dt.sr, "outputs/2023.12.19_SR_originalCalc.csv")
+# write.csv(dt.soilResp, "clean_data/licor8100_soil_fluxes.csv")
+
+# Archived way of doing this### ----
 
 # fix_file_names(path = "raw_data/LI7500/")
 # 
@@ -163,7 +195,20 @@ write.csv(dt.et, "clean_data/licor7500_ET_fluxes.csv")
 # dt.resp <- dt.nee[flux == "ER" & day_night == "day" , .(nee_best, day_night, plot, elevation, aspect, redo, file)]
 # dt.photo <- dt.nee[flux == "NEE" & day_night == "day", .(nee_best, day_night, plot, elevation, aspect, redo, file, tav)]
 # 
-# 
+# ## COMBINE ----------------
+# combine the relevant information from the different sources
+dt.carb[, plotID := paste0("Plot_", plot)]
+dt.carb[, temperature := tav]
+dt.carb.sub <- dt.carb[,.(plotID, elevation, aspect, GPP, NEE, ER, temperature)]
+summary(dt.carb.sub) # NA's in ER and thus in GPP
+dt.water[, plotID := paste0("Plot_", plot)]
+dt.water.sub <- dt.water[,.(plotID, elevation, aspect, TRANS, ET, EVAP)]
+summary(dt.water.sub) #all good, all there
+dt.sr.sub <- dt.sr[,.(plotID, elevation, aspect, co2_flux_sr, h2o_flux_sr, transectID)]
+summary(dt.sr.sub) #all good, all there
+
+dt.com <- left_join(dt.water.sub, dt.carb.sub, by = c("plotID", "aspect", "elevation"))
+dt.com <- left_join(dt.com, dt.sr.sub, by = c("plotID", "aspect", "elevation"))
 # 
 # setnames(dt.resp, c("nee_best", "file", "redo"), c("resp_best", "resp_file", "resp_redo"))
 # setnames(dt.photo, c("file", "redo"), c("nee_file", "nee_redo"))
@@ -246,44 +291,6 @@ write.csv(dt.et, "clean_data/licor7500_ET_fluxes.csv")
 # 
 # # fwrite(dt.water, "outputs/2023.12.19_H2Oflux_originalCalc.csv")
 # 
-# ## SOIL RESPIRATION ----------------------
-# 
-# #get file locations
-# filesSR <- dir(path = "raw_data/LI8100/", pattern = ".81x", full.names = TRUE, recursive = TRUE)
-# 
-# toi <- 120:179 #time of interest (not strictly necessary as this time is also the default)
-# 
-# #read SR
-# SR <- readSR(files = filesSR, toi = toi)
-# names(SR)
-# 
-# ggplot(data = SR, aes(x = Etime, y = Cdry, color = iChunk)) +
-#   geom_point() +
-#   scale_color_viridis_c() +
-#   facet_wrap(~ elevation) +
-#   theme_minimal()
-# 
-# #calc SR
-# dt.sr <- calcSR(data = SR)
-# dt.sr <- as.data.table(dt.sr)
-# dt.sr <- dt.sr[!co2_flux_sr < 0]
-# 
-# # fwrite(dt.sr, "outputs/2023.12.19_SR_originalCalc.csv")
-# 
-# ## COMBINE ----------------
-# # combine the relevant information from the different sources
-# dt.carb[, plotID := paste0("Plot_", plot)]
-# dt.carb[, temperature := tav]
-# dt.carb.sub <- dt.carb[,.(plotID, elevation, aspect, GPP, NEE, ER, temperature)]
-# summary(dt.carb.sub) # NA's in ER and thus in GPP
-# dt.water[, plotID := paste0("Plot_", plot)]
-# dt.water.sub <- dt.water[,.(plotID, elevation, aspect, TRANS, ET, EVAP)]
-# summary(dt.water.sub) #all good, all there
-# dt.sr.sub <- dt.sr[,.(plotID, elevation, aspect, co2_flux_sr, h2o_flux_sr, transectID)]
-# summary(dt.sr.sub) #all good, all there
-# 
-# dt.com <- left_join(dt.water.sub, dt.carb.sub, by = c("plotID", "aspect", "elevation"))
-# dt.com <- left_join(dt.com, dt.sr.sub, by = c("plotID", "aspect", "elevation"))
 # 
 # 
 # 
