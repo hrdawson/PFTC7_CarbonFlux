@@ -80,8 +80,8 @@ licor_et_start = read_csv("raw_data/licor_et_raw.csv") |>
   separate(filename, into = c("site", "elevation", "aspect", "plot", "day.night", "measurement"), remove = FALSE) |>
   # Set flux type
   mutate(flux = case_when(
-    str_detect(filename, "photo") ~ "Tlight",
-    str_detect(filename, "resp") ~ "Tdark",
+    str_detect(filename, "photo") ~ "ET",
+    str_detect(filename, "resp") ~ "EVAP",
     str_detect(filename, "a") ~ "Tamb")
   ) |>
   # Add in comments
