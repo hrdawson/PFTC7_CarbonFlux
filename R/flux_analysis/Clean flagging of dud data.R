@@ -51,27 +51,15 @@ licor_nee_duplicates_all = licor_nee_duplicates_keep |>
   bind_rows(licor_nee_duplicates_discard)
 
 # Bring back to the rest of the data
-licor_nee = read_csv2("clean_data/segmented_fluxes_comments.csv") |>
-  mutate(pairID = paste0(site, "_", aspect, "_", plot, "_", time, "_", measurement)) |>
+licor_nee = licor_nee_start |>
   # Add in flags
   left_join(licor_nee_duplicates_all) |>
-  # Automate the comments on the flux file
-  mutate(flag2 = case_when(
-    extra_info == "Needs timing changed" ~ "manual_flux_time_selection",
-    extra_info %in% c("Keep the redo", "increasing, keep the redo", "redo is better") ~ "discard_this_keep_other_reading",
-    extra_info == "Remove" & comment == "Should not be negative" ~ "decreasing_NEE",
-    extra_info == "Remove" & comment == "should not be positive" ~ "increasing_ER",
-    extra_info == "Has not been picked up in manual go-through" ~ "suspicious",
-    extra_info == "its increasing, changed it to 5-15, but should be removed" ~ "increasing_respiration",
-    TRUE ~ "okay"
-  ),
   # Combine duplicate flags and automated comment flags
-  flag = coalesce(flag, flag2)
-  ) |>
+  mutate(flag = coalesce(flag, flag2)) |>
   #Remove extra column
   select(-c(flag2,'...1'))
 
-# write.csv(licor_nee, "clean_data/licor_nee_flagged.csv")
+write.csv(licor_nee, "clean_data/licor_nee_flagged.csv")
 
 # H2O fluxes ----
 library(readxl)
