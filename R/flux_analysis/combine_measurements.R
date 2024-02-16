@@ -31,8 +31,8 @@ dt.nee <- read.csv("clean_data/licor_nee_flagged.csv") |>
   select(-X) |>
   rename(file = filename) |>
   # Pivot
-  select(site, plot, aspect, elevation, day.night, flux, nee_lm) |>
-  pivot_wider(names_from = flux, values_from = nee_lm) |>
+  select(site, plot, aspect, elevation, day.night, flux, flux_value) |>
+  pivot_wider(names_from = flux, values_from = flux_value) |>
   # Calculate GPP
   mutate(GPP = case_when(
     !is.na(NEE) ~ as.numeric(NEE)-as.numeric(ER),
@@ -52,8 +52,8 @@ write.csv(dt.nee, "clean_data/licor7500_carbon_fluxes.csv")
 dt.et <- read.csv("clean_data/licor_et_flagged.csv") |>
   dplyr::filter(flag %in% c("okay", "manual_flux_time_selection")) |>
   # Remove unique columns
-  select(site:day.night, flux, flux_lm) |>
-  pivot_wider(names_from = flux, values_from = flux_lm) |>
+  select(site:day.night, flux, flux_value) |>
+  pivot_wider(names_from = flux, values_from = flux_value) |>
   # Calculate transpiration
   mutate(TRANS = case_when(
     !is.na(EVAP) ~ as.numeric(ET)-as.numeric(EVAP),
