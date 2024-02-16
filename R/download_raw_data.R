@@ -30,6 +30,26 @@ get_file(
   # Where is the file stored within the OSF repository?
   remote_path = "raw_data/raw_flux_data/LI7500")
 
+get_file(
+  # Which repository is it in?
+  node = "hk2cy",
+  # Which file do you want?
+  file = "licor_et_raw.csv",
+  # Where do you want the file to go to?
+  path = "raw_data",
+  # Where is the file stored within the OSF repository?
+  remote_path = "raw_data/raw_flux_data/LI7500")
+
+get_file(
+  # Which repository is it in?
+  node = "hk2cy",
+  # Which file do you want?
+  file = "licor_et_cleaning_comments.xlsx",
+  # Where do you want the file to go to?
+  path = "raw_data",
+  # Where is the file stored within the OSF repository?
+  remote_path = "flux_data")
+
 ## Site 1 LI7500 data ----
 get_file(
   # Which repository is it in?
