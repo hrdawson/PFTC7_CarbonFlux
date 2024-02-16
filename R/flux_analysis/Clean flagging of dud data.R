@@ -8,7 +8,8 @@ licor_nee_start = read_csv2("clean_data/segmented_fluxes_comments.csv") |>
     str_detect(filename, "a") ~ "Ambient"
   )) |>
   # Add pivot ID
-  mutate(pairID = paste0(site, "_", aspect, "_", plot, "_", time, "_", flux)) |>
+  rename(day.night = time) |>
+  mutate(pairID = paste0(site, "_", aspect, "_", plot, "_", day.night, "_", flux)) |>
   # Automate the comments on the flux file
   mutate(flag2 = case_when(
     extra_info == "Needs timing changed" ~ "manual_flux_time_selection",
